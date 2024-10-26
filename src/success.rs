@@ -5,11 +5,18 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SuccessResponse<Data, Meta> {
     pub data: Data,
-    pub meta: Meta,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub meta: Option<Meta>,
 }
 
 impl<Data, Meta> SuccessResponse<Data, Meta> {
-    pub fn new(data: Data, meta: Meta) -> Self {
-        SuccessResponse { data, meta }
+    #[inline(always)]
+    pub fn new(data: Data) -> Self {
+        SuccessResponse { data, meta: None }
+    }
+    #[inline(always)]
+    pub fn with_meta(mut self, meta: Meta) -> Self {
+        self.meta = Some(meta);
+        self
     }
 }

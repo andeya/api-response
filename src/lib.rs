@@ -62,14 +62,11 @@ impl<Data, Meta> From<ApiResponse<Data, Meta>> for ApiResult<Data, Meta> {
     }
 }
 
-impl<Data, Meta> From<Result<Data, ErrorInfo>> for ApiResponse<Data, Meta>
-where
-    Meta: Default,
-{
+impl<Data, Meta> From<Result<Data, ErrorInfo>> for ApiResponse<Data, Meta> {
     fn from(result: Result<Data, ErrorInfo>) -> Self {
         match result {
-            Ok(data) => ApiResponse::Success(SuccessResponse::new(data, Meta::default())),
-            Err(error) => ApiResponse::Error(ErrorResponse::new(error, Meta::default())),
+            Ok(data) => ApiResponse::Success(SuccessResponse::new(data)),
+            Err(error) => ApiResponse::Error(ErrorResponse::new(error)),
         }
     }
 }
@@ -83,17 +80,14 @@ impl<Data, Meta> From<ApiResponse<Data, Meta>> for Result<Data, ErrorInfo> {
     }
 }
 
-impl<Data, Meta> From<ErrorInfo> for ApiResponse<Data, Meta>
-where
-    Meta: Default,
-{
+impl<Data, Meta> From<ErrorInfo> for ApiResponse<Data, Meta> {
     fn from(error: ErrorInfo) -> Self {
-        ApiResponse::Error(ErrorResponse::new(error, Meta::default()))
+        ApiResponse::Error(ErrorResponse::new(error))
     }
 }
 
 impl<Data, Meta> From<(Data, Meta)> for ApiResponse<Data, Meta> {
     fn from((data, meta): (Data, Meta)) -> Self {
-        ApiResponse::Success(SuccessResponse::new(data, meta))
+        ApiResponse::Success(SuccessResponse::new(data).with_meta(meta))
     }
 }

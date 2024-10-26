@@ -7,12 +7,19 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ErrorResponse<Meta> {
     pub error: ErrorInfo,
-    pub meta: Meta,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub meta: Option<Meta>,
 }
 
 impl<Meta> ErrorResponse<Meta> {
-    pub fn new(error: ErrorInfo, meta: Meta) -> Self {
-        ErrorResponse { error, meta }
+    #[inline(always)]
+    pub fn new(error: ErrorInfo) -> Self {
+        ErrorResponse { error, meta: None }
+    }
+    #[inline(always)]
+    pub fn with_meta(mut self, meta: Meta) -> Self {
+        self.meta = Some(meta);
+        self
     }
 }
 
@@ -22,6 +29,7 @@ impl<Meta> ErrorResponse<Meta> {
 pub struct ErrorInfo {
     pub code: i32,
     pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<HashMap<String, String>>,
     #[serde(skip)]
     pub source: Option<Arc<dyn Error + Send + Sync + 'static>>,
@@ -50,6 +58,7 @@ impl Error for ErrorInfo {
 }
 
 impl ErrorInfo {
+    #[inline(always)]
     pub fn new(code: i32, message: impl Into<String>) -> Self {
         ErrorInfo {
             code,
@@ -58,10 +67,12 @@ impl ErrorInfo {
             source: None,
         }
     }
+    #[inline(always)]
     pub fn with_details(mut self, details: HashMap<String, String>) -> Self {
         self.details = Some(details);
         self
     }
+    #[inline(always)]
     pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
         self.source = Some(Arc::new(source));
         self
