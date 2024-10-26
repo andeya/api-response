@@ -1,29 +1,33 @@
-use std::{error::Error, fmt};
+use std::{collections::HashMap, error::Error, fmt, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
-/// Struct to represent error information
-#[derive(Serialize, Deserialize)]
-pub struct ErrorInfo<Details> {
-    pub code: i32,
-    pub message: String,
-    pub details: Option<Details>,
-    #[serde(skip)]
-    pub source: Option<Box<dyn Error>>,
+/// Struct to represent an error response
+#[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ErrorResponse<Meta> {
+    pub error: ErrorInfo,
+    pub meta: Meta,
 }
 
-impl<Details> ErrorInfo<Details> {
-    pub fn new<S: Into<String>>(code: i32, message: S, details: Option<Details>, source: Option<Box<dyn Error>>) -> Self {
-        ErrorInfo {
-            code,
-            message: message.into(),
-            details,
-            source,
-        }
+impl<Meta> ErrorResponse<Meta> {
+    pub fn new(error: ErrorInfo, meta: Meta) -> Self {
+        ErrorResponse { error, meta }
     }
 }
 
-impl<Details: fmt::Debug> fmt::Debug for ErrorInfo<Details> {
+/// Struct to represent error information
+#[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
+#[derive(Serialize, Deserialize)]
+pub struct ErrorInfo {
+    pub code: i32,
+    pub message: String,
+    pub details: Option<HashMap<String, String>>,
+    #[serde(skip)]
+    pub source: Option<Arc<dyn Error + Send + Sync + 'static>>,
+}
+
+impl fmt::Debug for ErrorInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ErrorInfo")
             .field("code", &self.code)
@@ -33,27 +37,39 @@ impl<Details: fmt::Debug> fmt::Debug for ErrorInfo<Details> {
     }
 }
 
-impl<Details: fmt::Display> fmt::Display for ErrorInfo<Details> {
+impl fmt::Display for ErrorInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.message)
     }
 }
 
-impl<Details: Error + 'static> Error for ErrorInfo<Details> {
+impl Error for ErrorInfo {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source.as_ref().map(|source| source.as_ref() as &(dyn Error + 'static))
     }
 }
 
-/// Struct to represent an error response
-#[derive(Serialize, Deserialize)]
-pub struct ErrorResponse<M, Details> {
-    pub metadata: M,
-    pub error: ErrorInfo<Details>,
-}
-
-impl<M, Details> ErrorResponse<M, Details> {
-    pub fn new(metadata: M, error: ErrorInfo<Details>) -> Self {
-        ErrorResponse { metadata, error }
+impl ErrorInfo {
+    pub fn new(code: i32, message: impl Into<String>) -> Self {
+        ErrorInfo {
+            code,
+            message: message.into(),
+            details: None,
+            source: None,
+        }
+    }
+    pub fn with_details(mut self, details: HashMap<String, String>) -> Self {
+        self.details = Some(details);
+        self
+    }
+    pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
+        self.source = Some(Arc::new(source));
+        self
+    }
+    pub fn downcast_ref<E: Error + 'static>(&self) -> Option<&E> {
+        match &self.source {
+            Some(source) => source.downcast_ref(),
+            None => None,
+        }
     }
 }

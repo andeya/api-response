@@ -1,6 +1,6 @@
 [package]
 name = "api-response"
-version = "0.1.0"
+version = "0.6.0"
 edition = "2021"
 license = "MIT"
 description = "A consistent structure for API responses, including success and error handling."
@@ -15,15 +15,15 @@ authors = ["Andeya Lee <andeyalee@outlook.com>"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-getset2 = "0.2"
 salvo = { version = "0.73", default-features = false, features = [
     "oapi",
 ], optional = true }
 
 [dev-dependencies]
 serde_json = "1.0"
-
+tokio = { version = "1.41" }
+salvo = { version = "0.73", features = ["oapi"] }
 
 [features]
-default = ["salvo"]
+# default = ["salvo"]
 salvo = ["dep:salvo"]

@@ -6,12 +6,12 @@ This library provides a consistent structure for API responses, including succes
 [![Crates.io](https://img.shields.io/crates/v/api-response.svg)](https://crates.io/crates/api-response)
 [![Docs](https://docs.rs/api-response/badge.svg)](https://docs.rs/api-response)
 
-
 ## Features
 
-- Structured and unified API response format.
-- Includes metadata for both success and error responses.
-- Integration with the Salvo framework for HTTP handling (see examples).
+-   Structured and unified API response format.
+-   Includes meta for both success and error responses.
+-   Supports flexible serialization formats like JSON and Protobuf.
+-   Integration with the Salvo framework for HTTP handling (see examples).
 
 ## Usage
 
