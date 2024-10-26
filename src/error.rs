@@ -1,6 +1,6 @@
+use std::{error::Error, fmt};
+
 use serde::{Deserialize, Serialize};
-use std::error::Error;
-use std::fmt;
 
 /// Struct to represent error information
 #[derive(Serialize, Deserialize)]
@@ -13,12 +13,7 @@ pub struct ErrorInfo<Details> {
 }
 
 impl<Details> ErrorInfo<Details> {
-    pub fn new<S: Into<String>>(
-        code: i32,
-        message: S,
-        details: Option<Details>,
-        source: Option<Box<dyn Error>>,
-    ) -> Self {
+    pub fn new<S: Into<String>>(code: i32, message: S, details: Option<Details>, source: Option<Box<dyn Error>>) -> Self {
         ErrorInfo {
             code,
             message: message.into(),
@@ -46,9 +41,7 @@ impl<Details: fmt::Display> fmt::Display for ErrorInfo<Details> {
 
 impl<Details: Error + 'static> Error for ErrorInfo<Details> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source
-            .as_ref()
-            .map(|source| source.as_ref() as &(dyn Error + 'static))
+        self.source.as_ref().map(|source| source.as_ref() as &(dyn Error + 'static))
     }
 }
 
