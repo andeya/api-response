@@ -23,6 +23,18 @@ impl<Meta> ErrorResponse<Meta> {
     }
 }
 
+impl<Meta> fmt::Display for ErrorResponse<Meta> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.error.message)
+    }
+}
+
+impl<Meta: fmt::Debug> Error for ErrorResponse<Meta> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.error.source()
+    }
+}
+
 /// Struct to represent error information
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Serialize, Deserialize)]
@@ -72,10 +84,24 @@ impl ErrorInfo {
         self.details = Some(details);
         self
     }
+    #[inline]
+    pub fn insert_detail(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        if self.details.is_none() {
+            self.details = Some(HashMap::new());
+        }
+        self.details.as_mut().unwrap().insert(key.into(), value.into());
+        self
+    }
     #[inline(always)]
     pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
         self.source = Some(Arc::new(source));
         self
+    }
+    pub fn is<E: Error + 'static>(&self) -> bool {
+        match &self.source {
+            Some(source) => source.is::<E>(),
+            None => false,
+        }
     }
     pub fn downcast_ref<E: Error + 'static>(&self) -> Option<&E> {
         match &self.source {

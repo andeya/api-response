@@ -39,6 +39,30 @@ impl<Data, Meta> From<ErrorResponse<Meta>> for ApiResponse<Data, Meta> {
     }
 }
 
+impl<Data, Meta> ApiResponse<Data, Meta> {
+    pub fn is_success(&self) -> bool {
+        matches!(self, Self::Success(_))
+    }
+    pub fn is_error(&self) -> bool {
+        matches!(self, Self::Error(_))
+    }
+    pub fn get_meta(&self) -> Option<&Meta> {
+        match self {
+            ApiResponse::Success(success_response) => success_response.meta.as_ref(),
+            ApiResponse::Error(error_response) => error_response.meta.as_ref(),
+        }
+    }
+    pub fn into_result(self) -> ApiResult<Data, Meta> {
+        self.into()
+    }
+    pub fn into_data(self) -> Result<Data, ErrorResponse<Meta>> {
+        match self {
+            ApiResponse::Success(success_response) => Ok(success_response.data),
+            ApiResponse::Error(error_response) => Err(error_response),
+        }
+    }
+}
+
 pub type ApiResult<Data, Meta> = Result<SuccessResponse<Data, Meta>, ErrorResponse<Meta>>;
 
 impl<Data, Meta> From<ApiResult<Data, Meta>> for ApiResponse<Data, Meta>

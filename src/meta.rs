@@ -43,7 +43,7 @@ impl DefaultMeta {
         self
     }
     #[inline(always)]
-    pub fn insert_kv(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+    pub fn insert_custom(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.custom.insert(key.into(), value.into());
         self
     }
