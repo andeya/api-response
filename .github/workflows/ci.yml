@@ -1,0 +1,51 @@
+name: Auto Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Auto Build CI
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        rust: [nightly, beta, stable]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup set profile minimal
+          rustup update --no-self-update ${{ matrix.rust }}
+          rustup component add --toolchain ${{ matrix.rust }} rustfmt clippy
+          rustup default ${{ matrix.rust }}
+
+      - name: Ensure Unix Line Endings (Linux and macOS)
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+        run: |
+          find . -type f -name "*.rs" -exec bash -c 'tr -d "\r" < "$1" > temp && mv temp "$1"' _ {} \;
+        shell: bash
+
+      - name: Ensure Unix Line Endings (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          git config core.autocrlf false
+          git ls-files -z "*.rs" | xargs -0 -n1 bash -c 'tr -d "\r" < "$1" > temp && mv temp "$1"' _
+        shell: bash
+
+      - name: Cargo Fmt Check
+        run: cargo fmt --all -- --check
+
+      - name: Cargo Build
+        run: cargo build
+
+      - name: Cargo Clippy
+        run: cargo clippy -- -D warnings

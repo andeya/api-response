@@ -1,0 +1,41 @@
+# Sorts the import statements alphabetically
+reorder_imports = true
+
+# Groups imports by standard library, external crates, and local modules
+group_imports = "StdExternalCrate"
+
+# Groups imports at the crate level
+imports_granularity = "Crate"
+
+# Maximum width of each line
+max_width = 150
+
+# Whether or not to use hard tabs (false means using spaces)
+hard_tabs = false
+
+# Number of spaces per indentation level when using spaces
+tab_spaces = 4
+
+# Line ending style (supports 'Unix' or 'Windows')
+newline_style = "Unix"
+
+# Controls the maximum width of a single comment line. If a comment exceeds 
+# this width, it will be wrapped automatically. This setting helps keep comments 
+# within a reasonable line length, improving readability and maintaining a 
+# consistent style.
+comment_width = 150
+
+# Ensures each line is within the max_width limit
+wrap_comments = true
+
+# Breaks long chain calls into multiple lines to avoid exceeding max_width
+format_code_in_doc_comments = true
+
+# Reorders items within modules
+reorder_modules = true
+
+# Adds visibility modifiers (pub, pub(crate), etc.) on each field’s left side in structs
+struct_field_align_threshold = 0
+
+# Keeps code blocks clean by using vertical whitespace
+brace_style = "SameLineWhere"
