@@ -13,26 +13,45 @@ pub struct ErrorResponse<Meta> {
 
 impl<Meta> ErrorResponse<Meta> {
     #[inline(always)]
-    pub fn new(error: ErrorInfo) -> Self {
+    pub fn new(error: ErrorInfo, meta: Option<Meta>) -> Self {
+        ErrorResponse { error, meta }
+    }
+    #[inline(always)]
+    pub fn from_error(error: ErrorInfo) -> Self {
         ErrorResponse { error, meta: None }
     }
     #[inline(always)]
-    pub fn from_info(code: i32, message: impl Into<String>) -> Self {
-        Self::new(ErrorInfo::new(code, message))
+    pub fn from_error_info(code: i32, message: impl Into<String>) -> Self {
+        Self::from_error(ErrorInfo::new(code, message))
     }
     #[inline(always)]
     pub fn with_meta(mut self, meta: Meta) -> Self {
+        self.set_meta(meta);
+        self
+    }
+    #[inline(always)]
+    pub fn set_meta(&mut self, meta: Meta) -> &mut Self {
         self.meta = Some(meta);
         self
     }
     #[inline(always)]
-    pub fn insert_detail(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
-        self.error = self.error.insert_detail(key, value);
+    pub fn with_detail(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.set_detail(key, value);
+        self
+    }
+    #[inline(always)]
+    pub fn set_detail(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
+        self.error.set_detail(key, value);
         self
     }
     #[inline(always)]
     pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
-        self.error = self.error.with_source(source);
+        self.set_source(source);
+        self
+    }
+    #[inline(always)]
+    pub fn set_source(&mut self, source: impl Error + Send + Sync + 'static) -> &mut Self {
+        self.error.set_source(source);
         self
     }
     #[inline(always)]
@@ -46,7 +65,7 @@ impl<Meta> ErrorResponse<Meta> {
 }
 impl<Meta> From<ErrorInfo> for ErrorResponse<Meta> {
     fn from(value: ErrorInfo) -> Self {
-        Self::new(value)
+        Self::from_error(value)
     }
 }
 impl<Meta> fmt::Display for ErrorResponse<Meta> {
@@ -112,7 +131,12 @@ impl ErrorInfo {
         self
     }
     #[inline]
-    pub fn insert_detail(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+    pub fn with_detail(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.set_detail(key, value);
+        self
+    }
+    #[inline]
+    pub fn set_detail(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
         if self.details.is_none() {
             self.details = Some(HashMap::new());
         }
@@ -121,6 +145,11 @@ impl ErrorInfo {
     }
     #[inline(always)]
     pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
+        self.set_source(source);
+        self
+    }
+    #[inline(always)]
+    pub fn set_source(&mut self, source: impl Error + Send + Sync + 'static) -> &mut Self {
         self.source = Some(Arc::new(source));
         self
     }

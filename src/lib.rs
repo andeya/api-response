@@ -40,6 +40,47 @@ impl<Data, Meta> From<ErrorResponse<Meta>> for ApiResponse<Data, Meta> {
 }
 
 impl<Data, Meta> ApiResponse<Data, Meta> {
+    #[inline(always)]
+    pub fn new_success(data: Data, meta: Option<Meta>) -> Self {
+        Self::Success(SuccessResponse::new(data, meta))
+    }
+    #[inline(always)]
+    pub fn from_success(data: Data, meta: Meta) -> Self {
+        Self::Success(SuccessResponse::new(data, Some(meta)))
+    }
+    #[inline(always)]
+    pub fn from_success_data(data: Data) -> Self {
+        Self::Success(SuccessResponse::from_data(data))
+    }
+    #[inline(always)]
+    pub fn new_error(error: ErrorInfo, meta: Option<Meta>) -> Self {
+        Self::Error(ErrorResponse::new(error, meta))
+    }
+    #[inline(always)]
+    pub fn from_error(error: ErrorInfo, meta: Meta) -> Self {
+        Self::Error(ErrorResponse::new(error, Some(meta)))
+    }
+    #[inline(always)]
+    pub fn from_error_info(code: i32, message: impl Into<String>) -> Self {
+        Self::Error(ErrorResponse::from_error_info(code, message))
+    }
+    #[inline(always)]
+    pub fn with_meta(mut self, meta: Meta) -> Self {
+        self.set_meta(meta);
+        self
+    }
+    #[inline(always)]
+    pub fn set_meta(&mut self, meta: Meta) -> &mut Self {
+        match self {
+            ApiResponse::Success(success_response) => {
+                success_response.set_meta(meta);
+            }
+            ApiResponse::Error(error_response) => {
+                error_response.set_meta(meta);
+            }
+        }
+        self
+    }
     pub fn is_success(&self) -> bool {
         matches!(self, Self::Success(_))
     }
@@ -55,7 +96,7 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
     pub fn into_result(self) -> ApiResult<Data, Meta> {
         self.into()
     }
-    pub fn into_data(self) -> Result<Data, ErrorResponse<Meta>> {
+    pub fn into_result_data(self) -> Result<Data, ErrorResponse<Meta>> {
         match self {
             ApiResponse::Success(success_response) => Ok(success_response.data),
             ApiResponse::Error(error_response) => Err(error_response),
@@ -89,8 +130,8 @@ impl<Data, Meta> From<ApiResponse<Data, Meta>> for ApiResult<Data, Meta> {
 impl<Data, Meta> From<Result<Data, ErrorInfo>> for ApiResponse<Data, Meta> {
     fn from(result: Result<Data, ErrorInfo>) -> Self {
         match result {
-            Ok(data) => ApiResponse::Success(SuccessResponse::new(data)),
-            Err(error) => ApiResponse::Error(ErrorResponse::new(error)),
+            Ok(data) => ApiResponse::Success(SuccessResponse::from_data(data)),
+            Err(error) => ApiResponse::Error(ErrorResponse::from_error(error)),
         }
     }
 }
@@ -106,12 +147,12 @@ impl<Data, Meta> From<ApiResponse<Data, Meta>> for Result<Data, ErrorInfo> {
 
 impl<Data, Meta> From<ErrorInfo> for ApiResponse<Data, Meta> {
     fn from(error: ErrorInfo) -> Self {
-        ApiResponse::Error(ErrorResponse::new(error))
+        ApiResponse::Error(ErrorResponse::from_error(error))
     }
 }
 
 impl<Data, Meta> From<(Data, Meta)> for ApiResponse<Data, Meta> {
     fn from((data, meta): (Data, Meta)) -> Self {
-        ApiResponse::Success(SuccessResponse::new(data).with_meta(meta))
+        ApiResponse::Success(SuccessResponse::new(data, Some(meta)))
     }
 }
