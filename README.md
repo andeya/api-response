@@ -77,7 +77,7 @@ api-response = "0.6"
 
 ## Example
 
-### S
+### Example of data construction.
 
 ```rust
 use api_response::*;
@@ -123,7 +123,7 @@ fn error_json() {
 }
 ```
 
-### Server example
+### Example of server
 
 ```rust
 use std::num::ParseIntError;
