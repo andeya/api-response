@@ -8,7 +8,7 @@ group_imports = "StdExternalCrate"
 imports_granularity = "Crate"
 
 # Maximum width of each line
-max_width = 150
+max_width = 120
 
 # Whether or not to use hard tabs (false means using spaces)
 hard_tabs = false
@@ -23,7 +23,7 @@ newline_style = "Unix"
 # this width, it will be wrapped automatically. This setting helps keep comments 
 # within a reasonable line length, improving readability and maintaining a 
 # consistent style.
-comment_width = 150
+comment_width = 120
 
 # Ensures each line is within the max_width limit
 wrap_comments = true

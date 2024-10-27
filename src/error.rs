@@ -17,18 +17,43 @@ impl<Meta> ErrorResponse<Meta> {
         ErrorResponse { error, meta: None }
     }
     #[inline(always)]
+    pub fn from_info(code: i32, message: impl Into<String>) -> Self {
+        Self::new(ErrorInfo::new(code, message))
+    }
+    #[inline(always)]
     pub fn with_meta(mut self, meta: Meta) -> Self {
         self.meta = Some(meta);
         self
     }
+    #[inline(always)]
+    pub fn insert_detail(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
+        self.error = self.error.insert_detail(key, value);
+        self
+    }
+    #[inline(always)]
+    pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
+        self.error = self.error.with_source(source);
+        self
+    }
+    #[inline(always)]
+    pub fn is<E: Error + 'static>(&self) -> bool {
+        self.error.is::<E>()
+    }
+    #[inline(always)]
+    pub fn downcast_ref<E: Error + 'static>(&self) -> Option<&E> {
+        self.error.downcast_ref::<E>()
+    }
 }
-
+impl<Meta> From<ErrorInfo> for ErrorResponse<Meta> {
+    fn from(value: ErrorInfo) -> Self {
+        Self::new(value)
+    }
+}
 impl<Meta> fmt::Display for ErrorResponse<Meta> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.error.message)
     }
 }
-
 impl<Meta: fmt::Debug> Error for ErrorResponse<Meta> {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.error.source()
@@ -65,7 +90,9 @@ impl fmt::Display for ErrorInfo {
 
 impl Error for ErrorInfo {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source.as_ref().map(|source| source.as_ref() as &(dyn Error + 'static))
+        self.source
+            .as_ref()
+            .map(|source| source.as_ref() as &(dyn Error + 'static))
     }
 }
 

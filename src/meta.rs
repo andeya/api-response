@@ -19,7 +19,6 @@ pub struct DefaultMeta {
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[non_exhaustive]
 pub struct Links {
     pub self_link: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -40,6 +39,20 @@ impl DefaultMeta {
     #[inline(always)]
     pub fn with_links(mut self, links: Links) -> Self {
         self.links = Some(links);
+        self
+    }
+    #[inline(always)]
+    pub fn with_links_info(
+        mut self,
+        self_link: impl Into<String>,
+        next: Option<impl Into<String>>,
+        prev: Option<impl Into<String>>,
+    ) -> Self {
+        self.links = Some(Links {
+            self_link: self_link.into(),
+            next: next.map(Into::into),
+            prev: prev.map(Into::into),
+        });
         self
     }
     #[inline(always)]

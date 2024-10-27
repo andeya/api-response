@@ -1,7 +1,7 @@
 //! # API Response Library
 //!
-//! This library provides a consistent structure for API responses, including success and error handling, with support for various serialization
-//! formats like JSON and Protobuf.
+//! This library provides a consistent structure for API responses, including success and error handling, with support
+//! for various serialization formats like JSON and Protobuf.
 //!
 //! ## Modules
 //!

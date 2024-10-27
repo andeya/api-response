@@ -27,7 +27,103 @@ Or add the following line to your Cargo.toml:
 api-response = "0.6"
 ```
 
+## Format
+
+-   Success example:
+
+    ```json
+    {
+        "status": "success",
+        "data": "success data",
+        "meta": {
+            "requestId": "request_id",
+            "links": {
+                "selfLink": "http:://andeya.example.com/b",
+                "next": "http:://andeya.example.com/c",
+                "prev": "http:://andeya.example.com/a"
+            },
+            "custom": {
+                "key": "value"
+            }
+        }
+    }
+    ```
+
+-   Error example
+
+    ```json
+    {
+        "status": "error",
+        "error": {
+            "code": 404,
+            "message": "error message",
+            "details": {
+                "key": "value"
+            }
+        },
+        "meta": {
+            "requestId": "request_id",
+            "links": {
+                "selfLink": "http:://andeya.example.com/b",
+                "next": "http:://andeya.example.com/c",
+                "prev": "http:://andeya.example.com/a"
+            },
+            "custom": {
+                "key": "value"
+            }
+        }
+    }
+    ```
+
 ## Example
+
+### S
+
+```rust
+use api_response::*;
+
+#[test]
+fn success_json() {
+    const SUCCESS: &str = r##"{"status":"success","data":"success data","meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
+    let api_response = ApiResponse::from((
+        "success data",
+        DefaultMeta::new("request_id")
+            .with_links_info(
+                "http:://andeya.example.com/b",
+                Some("http:://andeya.example.com/c"),
+                Some("http:://andeya.example.com/a"),
+            )
+            .insert_custom("key", "value"),
+    ));
+    println!("{}", serde_json::to_string_pretty(&api_response).unwrap());
+    let s = serde_json::to_string(&api_response).unwrap();
+    assert_eq!(SUCCESS, s);
+}
+
+#[test]
+fn error_json() {
+    const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value"}},"meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
+    let api_response = ApiResponse::<(), _>::from(
+        ErrorResponse::from_info(404, "error message")
+            .with_meta(
+                DefaultMeta::new("request_id")
+                    .with_links_info(
+                        "http:://andeya.example.com/b",
+                        Some("http:://andeya.example.com/c"),
+                        Some("http:://andeya.example.com/a"),
+                    )
+                    .insert_custom("key", "value"),
+            )
+            .insert_detail("key", "value")
+            .with_source("@".parse::<u8>().unwrap_err()),
+    );
+    println!("{}", serde_json::to_string_pretty(&api_response).unwrap());
+    let e = serde_json::to_string(&api_response).unwrap();
+    assert_eq!(ERROR, e);
+}
+```
+
+### Server example
 
 ```rust
 use std::num::ParseIntError;
