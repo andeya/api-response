@@ -1,6 +1,6 @@
 use std::num::ParseIntError;
 
-use api_response::{ApiResponse, DefaultMeta, ErrorInfo};
+use api_response::{ApiResponse, ApiSuccessResponse, DefaultMeta, ErrorInfo};
 use salvo::prelude::*;
 use serde_json::{json, Value};
 
@@ -13,7 +13,7 @@ async fn get_user() -> Json<ApiResponse<Value, DefaultMeta>> {
         "name": "Andeya Lee",
         "email": "andeya.lee@example.com"
     });
-    Json((user, DefaultMeta::new("abc-123")).into())
+    Json(user.api_success_with_meta(DefaultMeta::new("abc-123")))
 }
 
 /// get error
@@ -21,15 +21,11 @@ async fn get_user() -> Json<ApiResponse<Value, DefaultMeta>> {
 #[cfg_attr(not(feature = "salvo"), handler)]
 async fn get_error() -> Json<ApiResponse<Value, ()>> {
     let err: ParseIntError = "@".parse::<u8>().unwrap_err();
-    let details = [("email".to_string(), "Invalid email format".to_string())]
-        .iter()
-        .cloned()
-        .collect();
     let error = ErrorInfo::new(400, "Invalid input data")
-        .with_details(details)
+        .with_detail("email", "Invalid email format")
         .with_source(err);
     println!("error={:?}", error.downcast_ref::<ParseIntError>().unwrap());
-    Json(Err(error).into())
+    Json(error.api_error_without_meta())
 }
 
 #[tokio::main]

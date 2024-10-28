@@ -2,6 +2,8 @@ use std::{collections::HashMap, error::Error, fmt, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
+use crate::ApiResponse;
+
 /// Struct to represent an error response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
@@ -164,5 +166,22 @@ impl ErrorInfo {
             Some(source) => source.downcast_ref(),
             None => None,
         }
+    }
+    pub fn api_error_response<Data, Meta>(self, meta: Option<Meta>) -> ApiResponse<Data, Meta> {
+        ApiResponse::Error(ErrorResponse { error: self, meta })
+    }
+    #[inline(always)]
+    pub fn api_error_without_meta<Data, Meta>(self) -> ApiResponse<Data, Meta>
+    where
+        Self: Sized,
+    {
+        self.api_error_response(None)
+    }
+    #[inline(always)]
+    pub fn api_error_with_meta<Data, Meta>(self, meta: Meta) -> ApiResponse<Data, Meta>
+    where
+        Self: Sized,
+    {
+        self.api_error_response(Some(meta))
     }
 }

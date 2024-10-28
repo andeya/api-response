@@ -16,7 +16,7 @@ pub mod success;
 pub use error::{ErrorInfo, ErrorResponse};
 pub use meta::{DefaultMeta, Links};
 pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
-pub use success::SuccessResponse;
+pub use success::{ApiSuccessResponse, SuccessResponse};
 
 /// Enum to represent the overall API response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
@@ -148,11 +148,5 @@ impl<Data, Meta> From<ApiResponse<Data, Meta>> for Result<Data, ErrorInfo> {
 impl<Data, Meta> From<ErrorInfo> for ApiResponse<Data, Meta> {
     fn from(error: ErrorInfo) -> Self {
         ApiResponse::Error(ErrorResponse::from_error(error))
-    }
-}
-
-impl<Data, Meta> From<(Data, Meta)> for ApiResponse<Data, Meta> {
-    fn from((data, meta): (Data, Meta)) -> Self {
-        ApiResponse::Success(SuccessResponse::new(data, Some(meta)))
     }
 }

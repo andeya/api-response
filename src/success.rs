@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::ApiResponse;
+
 /// Struct to represent a successful response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,5 +29,34 @@ impl<Data, Meta> SuccessResponse<Data, Meta> {
     pub fn set_meta(&mut self, meta: Meta) -> &mut Self {
         self.meta = Some(meta);
         self
+    }
+}
+
+pub trait ApiSuccessResponse {
+    fn api_success_response<Meta>(self, meta: Option<Meta>) -> ApiResponse<Self, Meta>
+    where
+        Self: Sized;
+    #[inline(always)]
+    fn api_success_without_meta<Meta>(self) -> ApiResponse<Self, Meta>
+    where
+        Self: Sized,
+    {
+        self.api_success_response(None)
+    }
+    #[inline(always)]
+    fn api_success_with_meta<Meta>(self, meta: Meta) -> ApiResponse<Self, Meta>
+    where
+        Self: Sized,
+    {
+        self.api_success_response(Some(meta))
+    }
+}
+
+impl<Data> ApiSuccessResponse for Data {
+    fn api_success_response<Meta>(self, meta: Option<Meta>) -> ApiResponse<Self, Meta>
+    where
+        Self: Sized,
+    {
+        ApiResponse::Success(SuccessResponse { data: self, meta })
     }
 }
