@@ -32,31 +32,18 @@ impl<Data, Meta> SuccessResponse<Data, Meta> {
     }
 }
 
-pub trait ApiSuccessResponse {
-    fn api_success_response<Meta>(self, meta: Option<Meta>) -> ApiResponse<Self, Meta>
-    where
-        Self: Sized;
+pub trait ApiSuccessResponse: Sized {
+    fn api_success_response<Meta>(self, meta: Option<Meta>) -> ApiResponse<Self, Meta> {
+        ApiResponse::Success(SuccessResponse { data: self, meta })
+    }
     #[inline(always)]
-    fn api_success_without_meta<Meta>(self) -> ApiResponse<Self, Meta>
-    where
-        Self: Sized,
-    {
+    fn api_success_without_meta<Meta>(self) -> ApiResponse<Self, Meta> {
         self.api_success_response(None)
     }
     #[inline(always)]
-    fn api_success_with_meta<Meta>(self, meta: Meta) -> ApiResponse<Self, Meta>
-    where
-        Self: Sized,
-    {
+    fn api_success_with_meta<Meta>(self, meta: Meta) -> ApiResponse<Self, Meta> {
         self.api_success_response(Some(meta))
     }
 }
 
-impl<Data> ApiSuccessResponse for Data {
-    fn api_success_response<Meta>(self, meta: Option<Meta>) -> ApiResponse<Self, Meta>
-    where
-        Self: Sized,
-    {
-        ApiResponse::Success(SuccessResponse { data: self, meta })
-    }
-}
+impl<Data> ApiSuccessResponse for Data {}
