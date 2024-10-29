@@ -1,4 +1,4 @@
-#![cfg(feature = "salvo")]
+#![cfg(all(feature = "salvo", feature = "try"))]
 
 use std::num::ParseIntError;
 

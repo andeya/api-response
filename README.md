@@ -24,7 +24,7 @@ cargo add api-response
 Or add the following line to your Cargo.toml:
 
 ```toml
-api-response = "0.6"
+api-response = { version = "0.7", features = ["try"] }
 ```
 
 ## Format
