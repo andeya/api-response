@@ -104,7 +104,7 @@ fn success_json() {
 fn error_json() {
     const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value"}},"meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
     let api_response = ApiResponse::<(), _>::from_error(
-        ErrorInfo::new(404, "error message")
+        ApiError::new(404, "error message")
             .with_detail("key", "value")
             .with_source("@".parse::<u8>().unwrap_err()),
         DefaultMeta::new("request_id")
@@ -126,7 +126,7 @@ fn error_json() {
 ```rust
 use std::num::ParseIntError;
 
-use api_response::{ApiResponse, DefaultMeta, ErrorInfo};
+use api_response::{ApiResponse, DefaultMeta, ApiError};
 use salvo::prelude::*;
 use serde_json::{json, Value};
 
@@ -148,7 +148,7 @@ async fn get_user() -> Json<ApiResponse<Value, DefaultMeta>> {
 async fn get_error() -> Json<ApiResponse<Value, ()>> {
     let err: ParseIntError = "@".parse::<u8>().unwrap_err();
     let details = [("email".to_string(), "Invalid email format".to_string())].iter().cloned().collect();
-    let error = ErrorInfo::new(400, "Invalid input data").with_details(details).with_source(err);
+    let error = ApiError::new(400, "Invalid input data").with_details(details).with_source(err);
     println!("error={:?}", error.downcast_ref::<ParseIntError>().unwrap());
     Json(Err(error).into())
 }

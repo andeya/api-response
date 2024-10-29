@@ -8,27 +8,27 @@ use crate::ApiResponse;
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ErrorResponse<Meta> {
-    pub error: ErrorInfo,
+    pub error: ApiError,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub meta: Option<Meta>,
 }
 
 impl<Meta> ErrorResponse<Meta> {
     #[inline(always)]
-    pub fn new(error: ErrorInfo, meta: Option<Meta>) -> Self {
+    pub fn new(error: ApiError, meta: Option<Meta>) -> Self {
         ErrorResponse { error, meta }
     }
     #[inline(always)]
-    pub fn from_error(error: ErrorInfo) -> Self {
+    pub fn from_error(error: ApiError) -> Self {
         ErrorResponse { error, meta: None }
     }
     #[inline(always)]
     pub fn from_error_msg(code: i32, message: impl Into<String>) -> Self {
-        Self::from_error(ErrorInfo::new(code, message))
+        Self::from_error(ApiError::new(code, message))
     }
     #[inline(always)]
     pub fn from_error_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
-        Self::from_error(ErrorInfo::from_source(code, source, message))
+        Self::from_error(ApiError::from_source(code, source, message))
     }
     #[inline(always)]
     pub fn with_meta(mut self, meta: Meta) -> Self {
@@ -69,8 +69,8 @@ impl<Meta> ErrorResponse<Meta> {
         self.error.downcast_ref::<E>()
     }
 }
-impl<Meta> From<ErrorInfo> for ErrorResponse<Meta> {
-    fn from(value: ErrorInfo) -> Self {
+impl<Meta> From<ApiError> for ErrorResponse<Meta> {
+    fn from(value: ApiError) -> Self {
         Self::from_error(value)
     }
 }
@@ -88,7 +88,7 @@ impl<Meta: fmt::Debug> Error for ErrorResponse<Meta> {
 /// Struct to represent error information
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Serialize, Deserialize)]
-pub struct ErrorInfo {
+pub struct ApiError {
     pub code: i32,
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -97,9 +97,9 @@ pub struct ErrorInfo {
     pub source: Option<Arc<dyn Error + Send + Sync + 'static>>,
 }
 
-impl fmt::Debug for ErrorInfo {
+impl fmt::Debug for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ErrorInfo")
+        f.debug_struct("ApiError")
             .field("code", &self.code)
             .field("message", &self.message)
             .field("details", &self.details)
@@ -107,13 +107,13 @@ impl fmt::Debug for ErrorInfo {
     }
 }
 
-impl fmt::Display for ErrorInfo {
+impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.message)
     }
 }
 
-impl Error for ErrorInfo {
+impl Error for ApiError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source
             .as_ref()
@@ -121,10 +121,10 @@ impl Error for ErrorInfo {
     }
 }
 
-impl ErrorInfo {
+impl ApiError {
     #[inline(always)]
     pub fn new(code: i32, message: impl Into<String>) -> Self {
-        ErrorInfo {
+        ApiError {
             code,
             message: message.into(),
             details: None,
@@ -133,7 +133,7 @@ impl ErrorInfo {
     }
     #[inline(always)]
     pub fn from_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
-        ErrorInfo {
+        ApiError {
             code,
             message: message.unwrap_or_else(|| format!("{source}")),
             details: None,

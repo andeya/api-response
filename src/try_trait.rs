@@ -17,7 +17,7 @@ impl<T, Meta> FromResidual<ApiResponse<Infallible, Meta>> for Result<T, ErrorRes
     }
 }
 
-impl<T, Meta> FromResidual<ApiResponse<Infallible, Meta>> for Result<T, ErrorInfo> {
+impl<T, Meta> FromResidual<ApiResponse<Infallible, Meta>> for Result<T, ApiError> {
     fn from_residual(residual: ApiResponse<Infallible, Meta>) -> Self {
         Err(residual.unwrap_err().error)
     }
@@ -60,7 +60,7 @@ mod tests {
         let x: SuccessResponse<Data, Meta> = ApiResponse::from_error_msg(1, "message")?;
         x.into()
     }
-    fn into_result_residual2<Data>() -> Result<Data, ErrorInfo> {
+    fn into_result_residual2<Data>() -> Result<Data, ApiError> {
         let x: SuccessResponse<_, ()> = ApiResponse::<_, ()>::from_error_msg(1, "message")?;
         x.into()
     }

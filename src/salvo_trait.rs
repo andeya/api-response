@@ -6,7 +6,7 @@ use salvo::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{ApiResponse, ErrorInfo};
+use crate::{ApiError, ApiResponse};
 
 /// Struct to represent the overall API response
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -15,7 +15,7 @@ struct ApiResponseSchema<Data, Meta> {
     data: Data,
     #[serde(skip_serializing_if = "Option::is_none")]
     meta: Option<Meta>,
-    error: ErrorInfo,
+    error: ApiError,
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]

@@ -24,7 +24,7 @@ mod success;
 
 use std::{error::Error, fmt::Debug};
 
-pub use error::{ErrorInfo, ErrorResponse};
+pub use error::{ApiError, ErrorResponse};
 pub use meta::{DefaultMeta, Links};
 pub use result::ApiResult;
 pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -51,8 +51,8 @@ impl<Data, Meta> From<ErrorResponse<Meta>> for ApiResponse<Data, Meta> {
     }
 }
 
-impl<Data, Meta> From<ErrorInfo> for ApiResponse<Data, Meta> {
-    fn from(error: ErrorInfo) -> Self {
+impl<Data, Meta> From<ApiError> for ApiResponse<Data, Meta> {
+    fn from(error: ApiError) -> Self {
         ApiResponse::Error(ErrorResponse::from_error(error))
     }
 }
@@ -71,11 +71,11 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
         Self::Success(SuccessResponse::from_data(data))
     }
     #[inline(always)]
-    pub fn new_error(error: ErrorInfo, meta: Option<Meta>) -> Self {
+    pub fn new_error(error: ApiError, meta: Option<Meta>) -> Self {
         Self::Error(ErrorResponse::new(error, meta))
     }
     #[inline(always)]
-    pub fn from_error(error: ErrorInfo, meta: Meta) -> Self {
+    pub fn from_error(error: ApiError, meta: Meta) -> Self {
         Self::Error(ErrorResponse::new(error, Some(meta)))
     }
     #[inline(always)]
@@ -140,7 +140,7 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
             ApiResponse::Error(error_response) => Err(error_response),
         }
     }
-    pub fn into_result_without_meta(self) -> Result<Data, ErrorInfo> {
+    pub fn into_result_without_meta(self) -> Result<Data, ApiError> {
         match self {
             ApiResponse::Success(success_response) => Ok(success_response.data),
             ApiResponse::Error(error_response) => Err(error_response.error),
