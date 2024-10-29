@@ -9,12 +9,24 @@
 //! * `success`: Contains the success response structures.
 //! * `error`: Contains the error handling structures.
 
-pub mod error;
-pub mod meta;
-pub mod success;
+#![cfg_attr(feature = "try", feature(try_trait_v2))]
+
+#[cfg(feature = "salvo")]
+mod salvo_trait;
+
+#[cfg(feature = "try")]
+mod try_trait;
+
+mod error;
+mod meta;
+mod result;
+mod success;
+
+use std::{error::Error, fmt::Debug};
 
 pub use error::{ErrorInfo, ErrorResponse};
 pub use meta::{DefaultMeta, Links};
+pub use result::ApiResult;
 pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
 pub use success::{ApiSuccessResponse, SuccessResponse};
 
@@ -36,6 +48,12 @@ impl<Data, Meta> From<SuccessResponse<Data, Meta>> for ApiResponse<Data, Meta> {
 impl<Data, Meta> From<ErrorResponse<Meta>> for ApiResponse<Data, Meta> {
     fn from(value: ErrorResponse<Meta>) -> Self {
         Self::Error(value)
+    }
+}
+
+impl<Data, Meta> From<ErrorInfo> for ApiResponse<Data, Meta> {
+    fn from(error: ErrorInfo) -> Self {
+        ApiResponse::Error(ErrorResponse::from_error(error))
     }
 }
 
@@ -61,8 +79,12 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
         Self::Error(ErrorResponse::new(error, Some(meta)))
     }
     #[inline(always)]
-    pub fn from_error_info(code: i32, message: impl Into<String>) -> Self {
-        Self::Error(ErrorResponse::from_error_info(code, message))
+    pub fn from_error_msg(code: i32, message: impl Into<String>) -> Self {
+        Self::Error(ErrorResponse::from_error_msg(code, message))
+    }
+    #[inline(always)]
+    pub fn from_error_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
+        Self::Error(ErrorResponse::from_error_source(code, source, message))
     }
     #[inline(always)]
     pub fn with_meta(mut self, meta: Meta) -> Self {
@@ -93,6 +115,22 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
             ApiResponse::Error(error_response) => error_response.meta.as_ref(),
         }
     }
+    pub fn unwrap(self) -> SuccessResponse<Data, Meta> {
+        match self {
+            ApiResponse::Success(success_response) => success_response,
+            ApiResponse::Error(_) => {
+                panic!("called `ApiResponse::unwrap()` on an `Error` value")
+            }
+        }
+    }
+    pub fn unwrap_err(self) -> ErrorResponse<Meta> {
+        match self {
+            ApiResponse::Success(_) => {
+                panic!("called `ApiResponse::unwrap()` on an `Error` value")
+            }
+            ApiResponse::Error(error_response) => error_response,
+        }
+    }
     pub fn into_result(self) -> ApiResult<Data, Meta> {
         self.into()
     }
@@ -102,51 +140,10 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
             ApiResponse::Error(error_response) => Err(error_response),
         }
     }
-}
-
-pub type ApiResult<Data, Meta> = Result<SuccessResponse<Data, Meta>, ErrorResponse<Meta>>;
-
-impl<Data, Meta> From<ApiResult<Data, Meta>> for ApiResponse<Data, Meta>
-where
-    Meta: Default,
-{
-    fn from(result: ApiResult<Data, Meta>) -> Self {
-        match result {
-            Ok(success) => ApiResponse::Success(success),
-            Err(error) => ApiResponse::Error(error),
+    pub fn into_result_without_meta(self) -> Result<Data, ErrorInfo> {
+        match self {
+            ApiResponse::Success(success_response) => Ok(success_response.data),
+            ApiResponse::Error(error_response) => Err(error_response.error),
         }
-    }
-}
-
-impl<Data, Meta> From<ApiResponse<Data, Meta>> for ApiResult<Data, Meta> {
-    fn from(api_response: ApiResponse<Data, Meta>) -> Self {
-        match api_response {
-            ApiResponse::Success(success) => Ok(success),
-            ApiResponse::Error(error) => Err(error),
-        }
-    }
-}
-
-impl<Data, Meta> From<Result<Data, ErrorInfo>> for ApiResponse<Data, Meta> {
-    fn from(result: Result<Data, ErrorInfo>) -> Self {
-        match result {
-            Ok(data) => ApiResponse::Success(SuccessResponse::from_data(data)),
-            Err(error) => ApiResponse::Error(ErrorResponse::from_error(error)),
-        }
-    }
-}
-
-impl<Data, Meta> From<ApiResponse<Data, Meta>> for Result<Data, ErrorInfo> {
-    fn from(api_response: ApiResponse<Data, Meta>) -> Self {
-        match api_response {
-            ApiResponse::Success(success) => Ok(success.data),
-            ApiResponse::Error(error) => Err(error.error),
-        }
-    }
-}
-
-impl<Data, Meta> From<ErrorInfo> for ApiResponse<Data, Meta> {
-    fn from(error: ErrorInfo) -> Self {
-        ApiResponse::Error(ErrorResponse::from_error(error))
     }
 }

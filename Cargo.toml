@@ -1,6 +1,6 @@
 [package]
 name = "api-response"
-version = "0.6.5"
+version = "0.7.0"
 edition = "2021"
 license = "MIT"
 description = "A consistent structure for API responses, including success and error handling."
@@ -25,5 +25,6 @@ tokio = { version = "1.41" }
 salvo = { version = "0.73", features = ["oapi"] }
 
 [features]
-# default = ["salvo"]
+default = ["try", "salvo"]
 salvo = ["dep:salvo"]
+try = []

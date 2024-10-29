@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error, fmt, sync::Arc};
+use std::{self, collections::HashMap, error::Error, fmt, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
@@ -23,8 +23,12 @@ impl<Meta> ErrorResponse<Meta> {
         ErrorResponse { error, meta: None }
     }
     #[inline(always)]
-    pub fn from_error_info(code: i32, message: impl Into<String>) -> Self {
+    pub fn from_error_msg(code: i32, message: impl Into<String>) -> Self {
         Self::from_error(ErrorInfo::new(code, message))
+    }
+    #[inline(always)]
+    pub fn from_error_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
+        Self::from_error(ErrorInfo::from_source(code, source, message))
     }
     #[inline(always)]
     pub fn with_meta(mut self, meta: Meta) -> Self {
@@ -125,6 +129,15 @@ impl ErrorInfo {
             message: message.into(),
             details: None,
             source: None,
+        }
+    }
+    #[inline(always)]
+    pub fn from_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
+        ErrorInfo {
+            code,
+            message: message.unwrap_or_else(|| format!("{source}")),
+            details: None,
+            source: Some(Arc::new(source)),
         }
     }
     #[inline(always)]
