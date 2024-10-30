@@ -10,6 +10,7 @@ This library provides a consistent structure for API responses, including succes
 
 -   Structured and unified API response format.
 -   Includes meta for both success and error responses.
+-   Support segmented error status codes.
 -   Supports flexible serialization formats like JSON and Protobuf.
 -   Integration with the Salvo framework for HTTP handling (see examples).
 
