@@ -103,7 +103,7 @@ fn success_json() {
 
 #[test]
 fn error_json() {
-    const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value"}},"meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
+    const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
     let api_response = ApiResponse::<(), _>::from_error(
         ApiError::new(404, "error message")
             .with_detail("key", "value")
