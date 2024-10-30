@@ -64,6 +64,16 @@ impl<Meta> ErrorResponse<Meta> {
         self.error.set_source(source);
         self
     }
+    /// Insert the setted source error into the detail field.
+    #[inline(always)]
+    pub fn set_source_detail(&mut self) -> &mut Self {
+        self.error.set_source_detail();
+        self
+    }
+    #[inline]
+    pub fn get_detail(&self, key: impl AsRef<str>) -> Option<&String> {
+        self.error.get_detail(key)
+    }
     #[inline(always)]
     pub fn is<E: Error + 'static>(&self) -> bool {
         self.error.is::<E>()
@@ -143,7 +153,7 @@ impl ApiError {
     ) -> Self {
         ApiError {
             code: code.into(),
-            message: message.unwrap_or_else(|| format!("{source}")),
+            message: message.unwrap_or_else(|| source.to_string()),
             details: None,
             source: Some(Arc::new(source)),
         }
@@ -175,6 +185,21 @@ impl ApiError {
     pub fn set_source(&mut self, source: impl Error + Send + Sync + 'static) -> &mut Self {
         self.source = Some(Arc::new(source));
         self
+    }
+    /// Insert the setted source error into the detail field.
+    #[inline(always)]
+    pub fn set_source_detail(&mut self) -> &mut Self {
+        if let Some(source) = &self.source {
+            self.set_detail("source", source.to_string());
+        }
+        self
+    }
+    #[inline]
+    pub fn get_detail(&self, key: impl AsRef<str>) -> Option<&String> {
+        if self.details.is_none() {
+            return None;
+        }
+        self.details.as_ref().unwrap().get(key.as_ref())
     }
     pub fn is<E: Error + 'static>(&self) -> bool {
         match &self.source {

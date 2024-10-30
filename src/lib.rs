@@ -18,6 +18,7 @@ mod salvo_trait;
 mod try_trait;
 
 mod error;
+pub mod error_status;
 mod meta;
 mod result;
 mod success;

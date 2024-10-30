@@ -17,6 +17,7 @@ serde = { version = "1", features = ["derive"] }
 salvo = { version = "0.73", default-features = false, features = [
     "oapi",
 ], optional = true }
+num_enum = "0.7"
 
 [dev-dependencies]
 serde_json = "1.0"
@@ -24,6 +25,6 @@ tokio = { version = "1.41" }
 salvo = { version = "0.73", features = ["oapi"] }
 
 [features]
-default = ["try", "salvo"]
+# default = ["try", "salvo"]
 salvo = ["dep:salvo"]
 try = []
