@@ -23,11 +23,15 @@ impl<Meta> ErrorResponse<Meta> {
         ErrorResponse { error, meta: None }
     }
     #[inline(always)]
-    pub fn from_error_msg(code: i32, message: impl Into<String>) -> Self {
+    pub fn from_error_msg(code: impl Into<i32>, message: impl Into<String>) -> Self {
         Self::from_error(ApiError::new(code, message))
     }
     #[inline(always)]
-    pub fn from_error_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
+    pub fn from_error_source(
+        code: impl Into<i32>,
+        source: impl Error + Send + Sync + 'static,
+        message: Option<String>,
+    ) -> Self {
         Self::from_error(ApiError::from_source(code, source, message))
     }
     #[inline(always)]
@@ -123,18 +127,22 @@ impl Error for ApiError {
 
 impl ApiError {
     #[inline(always)]
-    pub fn new(code: i32, message: impl Into<String>) -> Self {
+    pub fn new(code: impl Into<i32>, message: impl Into<String>) -> Self {
         ApiError {
-            code,
+            code: code.into(),
             message: message.into(),
             details: None,
             source: None,
         }
     }
     #[inline(always)]
-    pub fn from_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
+    pub fn from_source(
+        code: impl Into<i32>,
+        source: impl Error + Send + Sync + 'static,
+        message: Option<String>,
+    ) -> Self {
         ApiError {
-            code,
+            code: code.into(),
             message: message.unwrap_or_else(|| format!("{source}")),
             details: None,
             source: Some(Arc::new(source)),

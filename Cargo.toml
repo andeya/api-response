@@ -1,13 +1,12 @@
 [package]
 name = "api-response"
-version = "0.7.1"
+version = "0.7.2"
 edition = "2021"
 license = "MIT"
 description = "A consistent structure for API responses, including success and error handling."
 repository = "https://github.com/andeya/api-response"
 documentation = "https://docs.rs/api-response"
 readme = "README.md"
-homepage = "https://casdoor.org"
 keywords = ["api", "http", "rpc", "response"]
 authors = ["Andeya Lee <andeyalee@outlook.com>"]
 
@@ -25,6 +24,6 @@ tokio = { version = "1.41" }
 salvo = { version = "0.73", features = ["oapi"] }
 
 [features]
-# default = ["try", "salvo"]
+default = ["try", "salvo"]
 salvo = ["dep:salvo"]
 try = []

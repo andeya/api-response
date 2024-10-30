@@ -79,11 +79,15 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
         Self::Error(ErrorResponse::new(error, Some(meta)))
     }
     #[inline(always)]
-    pub fn from_error_msg(code: i32, message: impl Into<String>) -> Self {
+    pub fn from_error_msg(code: impl Into<i32>, message: impl Into<String>) -> Self {
         Self::Error(ErrorResponse::from_error_msg(code, message))
     }
     #[inline(always)]
-    pub fn from_error_source(code: i32, source: impl Error + Send + Sync + 'static, message: Option<String>) -> Self {
+    pub fn from_error_source(
+        code: impl Into<i32>,
+        source: impl Error + Send + Sync + 'static,
+        message: Option<String>,
+    ) -> Self {
         Self::Error(ErrorResponse::from_error_source(code, source, message))
     }
     #[inline(always)]
