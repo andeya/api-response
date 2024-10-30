@@ -106,7 +106,7 @@ fn error_json() {
     let api_response = ApiResponse::<(), _>::from_error(
         ApiError::new(404, "error message")
             .with_detail("key", "value")
-            .with_source("@".parse::<u8>().unwrap_err()),
+            .with_source("@".parse::<u8>().unwrap_err(), true),
         DefaultMeta::new("request_id")
             .with_links_info(
                 "http:://andeya.example.com/b",
@@ -148,7 +148,7 @@ async fn get_user() -> Json<ApiResponse<Value, DefaultMeta>> {
 async fn get_error() -> Json<ApiResponse<Value, ()>> {
     let err: ParseIntError = "@".parse::<u8>().unwrap_err();
     let details = [("email".to_string(), "Invalid email format".to_string())].iter().cloned().collect();
-    let error = ApiError::new(400, "Invalid input data").with_details(details).with_source(err);
+    let error = ApiError::new(400, "Invalid input data").with_details(details).with_source(err, true);
     println!("error={:?}", error.downcast_ref::<ParseIntError>().unwrap());
     Json(Err(error).into())
 }

@@ -2,7 +2,9 @@ use std::{self, collections::HashMap, error::Error, fmt, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
-use crate::ApiResponse;
+use crate::{utils::OrderedHashMap, ApiResponse};
+
+pub const NONE_MSG: Option<&str> = None;
 
 /// Struct to represent an error response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
@@ -30,9 +32,10 @@ impl<Meta> ErrorResponse<Meta> {
     pub fn from_error_source(
         code: impl Into<i32>,
         source: impl Error + Send + Sync + 'static,
-        message: Option<String>,
+        set_source_detail: bool,
+        message: Option<impl Into<String>>,
     ) -> Self {
-        Self::from_error(ApiError::from_source(code, source, message))
+        Self::from_error(ApiError::from_source(code, source, set_source_detail, message))
     }
     #[inline(always)]
     pub fn with_meta(mut self, meta: Meta) -> Self {
@@ -55,24 +58,30 @@ impl<Meta> ErrorResponse<Meta> {
         self
     }
     #[inline(always)]
-    pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
-        self.set_source(source);
+    pub fn with_source(mut self, source: impl Error + Send + Sync + 'static, set_source_detail: bool) -> Self {
+        self.set_source(source, set_source_detail);
         self
     }
     #[inline(always)]
-    pub fn set_source(&mut self, source: impl Error + Send + Sync + 'static) -> &mut Self {
-        self.error.set_source(source);
-        self
-    }
-    /// Insert the setted source error into the detail field.
-    #[inline(always)]
-    pub fn set_source_detail(&mut self) -> &mut Self {
-        self.error.set_source_detail();
+    pub fn set_source(&mut self, source: impl Error + Send + Sync + 'static, set_source_detail: bool) -> &mut Self {
+        self.error.set_source(source, set_source_detail);
         self
     }
     #[inline]
-    pub fn get_detail(&self, key: impl AsRef<str>) -> Option<&String> {
-        self.error.get_detail(key)
+    pub fn code(&self) -> i32 {
+        self.error.code()
+    }
+    #[inline]
+    pub fn message(&self) -> &String {
+        &self.error.message()
+    }
+    #[inline]
+    pub fn details(&self) -> Option<&HashMap<String, String>> {
+        self.error.details()
+    }
+    #[inline]
+    pub fn detail(&self, key: impl AsRef<str>) -> Option<&String> {
+        self.error.detail(key)
     }
     #[inline(always)]
     pub fn is<E: Error + 'static>(&self) -> bool {
@@ -103,12 +112,12 @@ impl<Meta: fmt::Debug> Error for ErrorResponse<Meta> {
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Serialize, Deserialize)]
 pub struct ApiError {
-    pub code: i32,
-    pub message: String,
+    pub(crate) code: i32,
+    pub(crate) message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub details: Option<HashMap<String, String>>,
+    pub(crate) details: Option<OrderedHashMap<String, String>>,
     #[serde(skip)]
-    pub source: Option<Arc<dyn Error + Send + Sync + 'static>>,
+    pub(crate) source: Option<Arc<dyn Error + Send + Sync + 'static>>,
 }
 
 impl fmt::Debug for ApiError {
@@ -149,18 +158,23 @@ impl ApiError {
     pub fn from_source(
         code: impl Into<i32>,
         source: impl Error + Send + Sync + 'static,
-        message: Option<String>,
+        set_source_detail: bool,
+        message: Option<impl Into<String>>,
     ) -> Self {
-        ApiError {
+        let mut e = ApiError {
             code: code.into(),
-            message: message.unwrap_or_else(|| source.to_string()),
+            message: message.map_or_else(|| source.to_string(), Into::into),
             details: None,
             source: Some(Arc::new(source)),
+        };
+        if set_source_detail {
+            e.set_source_detail();
         }
+        e
     }
     #[inline(always)]
     pub fn with_details(mut self, details: HashMap<String, String>) -> Self {
-        self.details = Some(details);
+        self.details = Some(OrderedHashMap(details));
         self
     }
     #[inline]
@@ -171,31 +185,46 @@ impl ApiError {
     #[inline]
     pub fn set_detail(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
         if self.details.is_none() {
-            self.details = Some(HashMap::new());
+            self.details = Some(Default::default());
         }
         self.details.as_mut().unwrap().insert(key.into(), value.into());
         self
     }
     #[inline(always)]
-    pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
-        self.set_source(source);
+    pub fn with_source(mut self, source: impl Error + Send + Sync + 'static, set_source_detail: bool) -> Self {
+        self.set_source(source, set_source_detail);
         self
     }
     #[inline(always)]
-    pub fn set_source(&mut self, source: impl Error + Send + Sync + 'static) -> &mut Self {
+    pub fn set_source(&mut self, source: impl Error + Send + Sync + 'static, set_source_detail: bool) -> &mut Self {
         self.source = Some(Arc::new(source));
+        if set_source_detail {
+            self.set_source_detail();
+        }
         self
     }
     /// Insert the setted source error into the detail field.
     #[inline(always)]
-    pub fn set_source_detail(&mut self) -> &mut Self {
+    fn set_source_detail(&mut self) -> &mut Self {
         if let Some(source) = &self.source {
             self.set_detail("source", source.to_string());
         }
         self
     }
     #[inline]
-    pub fn get_detail(&self, key: impl AsRef<str>) -> Option<&String> {
+    pub fn code(&self) -> i32 {
+        self.code
+    }
+    #[inline]
+    pub fn message(&self) -> &String {
+        &self.message
+    }
+    #[inline]
+    pub fn details(&self) -> Option<&HashMap<String, String>> {
+        self.details.as_deref()
+    }
+    #[inline]
+    pub fn detail(&self, key: impl AsRef<str>) -> Option<&String> {
         if self.details.is_none() {
             return None;
         }
@@ -213,21 +242,21 @@ impl ApiError {
             None => None,
         }
     }
-    pub fn api_error_response<Data, Meta>(self, meta: Option<Meta>) -> ApiResponse<Data, Meta> {
+    pub fn api_response<Data, Meta>(self, meta: Option<Meta>) -> ApiResponse<Data, Meta> {
         ApiResponse::Error(ErrorResponse { error: self, meta })
     }
     #[inline(always)]
-    pub fn api_error_without_meta<Data, Meta>(self) -> ApiResponse<Data, Meta>
+    pub fn api_response_without_meta<Data, Meta>(self) -> ApiResponse<Data, Meta>
     where
         Self: Sized,
     {
-        self.api_error_response(None)
+        self.api_response(None)
     }
     #[inline(always)]
-    pub fn api_error_with_meta<Data, Meta>(self, meta: Meta) -> ApiResponse<Data, Meta>
+    pub fn api_response_with_meta<Data, Meta>(self, meta: Meta) -> ApiResponse<Data, Meta>
     where
         Self: Sized,
     {
-        self.api_error_response(Some(meta))
+        self.api_response(Some(meta))
     }
 }

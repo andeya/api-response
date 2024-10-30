@@ -22,10 +22,11 @@ pub mod error_status;
 mod meta;
 mod result;
 mod success;
+mod utils;
 
 use std::{error::Error, fmt::Debug};
 
-pub use error::{ApiError, ErrorResponse};
+pub use error::{ApiError, ErrorResponse, NONE_MSG};
 pub use meta::{DefaultMeta, Links};
 pub use result::ApiResult;
 pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -87,9 +88,15 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
     pub fn from_error_source(
         code: impl Into<i32>,
         source: impl Error + Send + Sync + 'static,
+        set_source_detail: bool,
         message: Option<String>,
     ) -> Self {
-        Self::Error(ErrorResponse::from_error_source(code, source, message))
+        Self::Error(ErrorResponse::from_error_source(
+            code,
+            source,
+            set_source_detail,
+            message,
+        ))
     }
     #[inline(always)]
     pub fn with_meta(mut self, meta: Meta) -> Self {

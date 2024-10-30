@@ -33,16 +33,16 @@ impl<Data, Meta> SuccessResponse<Data, Meta> {
 }
 
 pub trait ApiSuccessResponse: Sized {
-    fn api_success_response<Meta>(self, meta: Option<Meta>) -> ApiResponse<Self, Meta> {
+    fn api_response<Meta>(self, meta: Option<Meta>) -> ApiResponse<Self, Meta> {
         ApiResponse::Success(SuccessResponse { data: self, meta })
     }
     #[inline(always)]
-    fn api_success_without_meta<Meta>(self) -> ApiResponse<Self, Meta> {
-        self.api_success_response(None)
+    fn api_response_without_meta<Meta>(self) -> ApiResponse<Self, Meta> {
+        self.api_response(None)
     }
     #[inline(always)]
-    fn api_success_with_meta<Meta>(self, meta: Meta) -> ApiResponse<Self, Meta> {
-        self.api_success_response(Some(meta))
+    fn api_response_with_meta<Meta>(self, meta: Meta) -> ApiResponse<Self, Meta> {
+        self.api_response(Some(meta))
     }
 }
 

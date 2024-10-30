@@ -2,17 +2,19 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use crate::utils::OrderedHashMap;
+
 /// Default meta type
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct DefaultMeta {
-    pub request_id: String,
+    request_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub links: Option<Links>,
+    links: Option<Links>,
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
-    pub custom: HashMap<String, String>,
+    custom: OrderedHashMap<String, String>,
 }
 
 /// Struct to represent links related to the response
@@ -33,7 +35,7 @@ impl DefaultMeta {
         Self {
             request_id: request_id.into(),
             links: None,
-            custom: HashMap::new(),
+            custom: Default::default(),
         }
     }
     #[inline(always)]
@@ -59,6 +61,19 @@ impl DefaultMeta {
     pub fn insert_custom(mut self, key: impl Into<String>, value: impl Into<String>) -> Self {
         self.custom.insert(key.into(), value.into());
         self
+    }
+    #[inline]
+    pub fn request_id(&self) -> &String {
+        &self.request_id
+    }
+    pub fn links(&self) -> Option<&Links> {
+        self.links.as_ref()
+    }
+    pub fn custom(&self) -> &HashMap<String, String> {
+        &self.custom
+    }
+    pub fn custom_kv(&self, key: impl AsRef<str>) -> Option<&String> {
+        self.custom.get(key.as_ref())
     }
 }
 
