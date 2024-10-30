@@ -1,6 +1,4 @@
-//！ https://grpc.github.io/grpc/core/md_doc_statuscodes.html
-
-use std::{fmt::Display, ops::Add};
+use std::{fmt::Display, ops::BitOr};
 
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 pub use CodeSegment::*;
@@ -80,60 +78,34 @@ impl ErrorStatus {
             source: None,
         }
     }
-    /// Generate an ApiError with an added error code suffix.
-    /// NOTE:
-    ///  1. Append the absolute value of `code_suffix` to the end of the current code.
-    ///  2. The sign of `code_suffix` determines the sign of the code.
-    ///  3. The maximum value of `code_suffix` cannot exceed 9,999,999; otherwise, it may lead to a calculation
-    ///     overflow.
-    pub fn api_error_with_suffix(self, code_suffix: impl Into<i32>, message: Option<String>) -> ApiError {
-        let code_suffix = code_suffix.into();
-        let minus_sign = code_suffix < 0;
-        let abs = code_suffix.abs();
-        let mut code = Into::<i32>::into(self) * 10_i32.pow(abs.to_string().len() as u32) + abs;
-        if minus_sign {
-            code = -code;
-        }
-        ApiError {
-            code,
-            message: message.unwrap_or_else(|| self.to_string()),
-            details: None,
-            source: None,
-        }
-    }
     /// Append 2 digits at the end of the current code in the form of a decimal literal and generate an `ApiError`.
-    pub fn api_error_cs1(self, code_segment_1: CodeSegment, message: Option<String>) -> ApiError {
+    pub fn api_error_one_segment(self, s1: CodeSegment, message: Option<String>) -> ApiError {
         ApiError {
-            code: self + code_segment_1,
+            code: self | s1,
             message: message.unwrap_or_else(|| self.to_string()),
             details: None,
             source: None,
         }
     }
     /// Append 2*2 digits at the end of the current code in the form of a decimal literal and generate an `ApiError`.
-    pub fn api_error_cs2(
-        self,
-        code_segment_1: CodeSegment,
-        code_segment_2: CodeSegment,
-        message: Option<String>,
-    ) -> ApiError {
+    pub fn api_error_two_segment(self, s1: CodeSegment, s2: CodeSegment, message: Option<String>) -> ApiError {
         ApiError {
-            code: self + code_segment_1 + code_segment_2,
+            code: self | s1 | s2,
             message: message.unwrap_or_else(|| self.to_string()),
             details: None,
             source: None,
         }
     }
     /// Append 2*3 digits at the end of the current code in the form of a decimal literal and generate an `ApiError`.
-    pub fn api_error_cs3(
+    pub fn api_error_three_segment(
         self,
-        code_segment_1: CodeSegment,
-        code_segment_2: CodeSegment,
-        code_segment_3: CodeSegment,
+        s1: CodeSegment,
+        s2: CodeSegment,
+        s3: CodeSegment,
         message: Option<String>,
     ) -> ApiError {
         ApiError {
-            code: self + code_segment_1 + code_segment_2 + code_segment_3,
+            code: self | s1 | s2 | s3,
             message: message.unwrap_or_else(|| self.to_string()),
             details: None,
             source: None,
@@ -245,13 +217,19 @@ pub enum CodeSegment {
     S99 = 99,
 }
 
+impl From<CodeSegment> for i32 {
+    fn from(value: CodeSegment) -> Self {
+        value as i32
+    }
+}
+
 const OVERFLOW: &str = "A calculation overflow occurs when generating segmented-error-code.";
 
 /// Append two digits at the end in the form of a decimal literal.
-impl Add<CodeSegment> for ErrorStatus {
+impl BitOr<CodeSegment> for ErrorStatus {
     type Output = i32;
 
-    fn add(self, rhs: CodeSegment) -> Self::Output {
+    fn bitor(self, rhs: CodeSegment) -> Self::Output {
         (self as i32)
             .checked_mul(100)
             .expect(OVERFLOW)
@@ -261,13 +239,27 @@ impl Add<CodeSegment> for ErrorStatus {
 }
 
 /// Append two digits at the end in the form of a decimal literal.
-impl Add<CodeSegment> for i32 {
+impl BitOr<CodeSegment> for i32 {
     type Output = i32;
 
-    fn add(self, rhs: CodeSegment) -> Self::Output {
+    fn bitor(self, rhs: CodeSegment) -> Self::Output {
         self.checked_mul(100)
             .expect(OVERFLOW)
             .checked_add(rhs as i32)
             .expect(OVERFLOW)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn code_segment() {
+        assert_eq!(14010203, NOT_FOUND | S01 | S02 | S03)
+    }
+    #[test]
+    #[should_panic]
+    fn code_segment_overflow() {
+        assert_eq!(14010203, NOT_FOUND | S01 | S02 | S03 | S05)
     }
 }
