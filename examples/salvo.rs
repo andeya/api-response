@@ -2,7 +2,7 @@
 
 use std::num::ParseIntError;
 
-use api_response::{error_status::*, ApiError, ApiResponse, ApiSuccessResponse, DefaultMeta};
+use api_response::{error_code::*, ApiError, ApiResponse, ApiSuccessResponse, DefaultMeta};
 use salvo::prelude::*;
 use serde::Serialize;
 
@@ -29,7 +29,7 @@ async fn get_user() -> ApiResponse<User, DefaultMeta> {
 async fn get_error() -> ApiResponse<(), ()> {
     let err: ParseIntError = "@".parse::<u8>().unwrap_err();
     let api_error = INVALID_ARGUMENT
-        .api_error_one_segment(S01, "Invalid input data")
+        .api_error1(S01, "Invalid input data")
         .with_detail("email", "Invalid email format")
         .with_source(err, true);
     println!("api_error={:?}", api_error.downcast_ref::<ParseIntError>().unwrap());

@@ -17,7 +17,7 @@ mod try_trait;
 mod salvo_trait;
 
 mod error;
-pub mod error_status;
+pub mod error_code;
 mod meta;
 mod result;
 mod success;
