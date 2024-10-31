@@ -4,7 +4,7 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 pub use CodeSegment::*;
 pub use ErrorStatus::*;
 
-use crate::ApiError;
+use crate::{ApiError, MaybeString};
 
 #[allow(non_camel_case_types)]
 #[non_exhaustive]
@@ -57,46 +57,50 @@ impl Display for ErrorStatus {
 
 impl ErrorStatus {
     pub fn maybe_client_error(self) -> bool {
-        match self {
+        matches!(
+            self,
             ErrorStatus::CANCELLED
-            | ErrorStatus::UNKNOWN
-            | ErrorStatus::DEADLINE_EXCEEDED
-            | ErrorStatus::RESOURCE_EXHAUSTED
-            | ErrorStatus::UNIMPLEMENTED
-            | ErrorStatus::INTERNAL
-            | ErrorStatus::UNAVAILABLE
-            | ErrorStatus::UNAUTHENTICATED => true,
-            _ => false,
-        }
+                | ErrorStatus::UNKNOWN
+                | ErrorStatus::DEADLINE_EXCEEDED
+                | ErrorStatus::RESOURCE_EXHAUSTED
+                | ErrorStatus::UNIMPLEMENTED
+                | ErrorStatus::INTERNAL
+                | ErrorStatus::UNAVAILABLE
+                | ErrorStatus::UNAUTHENTICATED
+        )
     }
     /// Generate an ApiError.
-    pub fn api_error(self, message: Option<impl Into<String>>) -> ApiError {
+    pub fn api_error(self, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self.into(),
-            message: message.map_or_else(|| self.to_string(), Into::into),
+            message: message
+                .into()
+                .into_option_string()
+                .map_or_else(|| self.to_string(), Into::into),
             details: None,
             source: None,
         }
     }
     /// Append 2 digits at the end of the current code in the form of a decimal literal and generate an `ApiError`.
-    pub fn api_error_one_segment(self, s1: CodeSegment, message: Option<impl Into<String>>) -> ApiError {
+    pub fn api_error_one_segment(self, s1: CodeSegment, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self | s1,
-            message: message.map_or_else(|| self.to_string(), Into::into),
+            message: message
+                .into()
+                .into_option_string()
+                .map_or_else(|| self.to_string(), Into::into),
             details: None,
             source: None,
         }
     }
     /// Append 2*2 digits at the end of the current code in the form of a decimal literal and generate an `ApiError`.
-    pub fn api_error_two_segment(
-        self,
-        s1: CodeSegment,
-        s2: CodeSegment,
-        message: Option<impl Into<String>>,
-    ) -> ApiError {
+    pub fn api_error_two_segment(self, s1: CodeSegment, s2: CodeSegment, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self | s1 | s2,
-            message: message.map_or_else(|| self.to_string(), Into::into),
+            message: message
+                .into()
+                .into_option_string()
+                .map_or_else(|| self.to_string(), Into::into),
             details: None,
             source: None,
         }
@@ -107,11 +111,14 @@ impl ErrorStatus {
         s1: CodeSegment,
         s2: CodeSegment,
         s3: CodeSegment,
-        message: Option<impl Into<String>>,
+        message: impl Into<MaybeString>,
     ) -> ApiError {
         ApiError {
             code: self | s1 | s2 | s3,
-            message: message.map_or_else(|| self.to_string(), Into::into),
+            message: message
+                .into()
+                .into_option_string()
+                .map_or_else(|| self.to_string(), Into::into),
             details: None,
             source: None,
         }

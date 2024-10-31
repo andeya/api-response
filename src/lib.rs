@@ -26,11 +26,12 @@ mod utils;
 
 use std::{error::Error, fmt::Debug};
 
-pub use error::{ApiError, ErrorResponse, NONE_MSG};
+pub use error::{ApiError, ErrorResponse};
 pub use meta::{DefaultMeta, Links};
 pub use result::ApiResult;
 pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
 pub use success::{ApiSuccessResponse, SuccessResponse};
+pub use utils::MaybeString;
 
 /// Enum to represent the overall API response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]

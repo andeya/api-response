@@ -2,7 +2,7 @@
 
 use std::num::ParseIntError;
 
-use api_response::{error_status::*, ApiError, ApiResponse, ApiSuccessResponse, DefaultMeta, NONE_MSG};
+use api_response::{error_status::*, ApiError, ApiResponse, ApiSuccessResponse, DefaultMeta};
 use salvo::prelude::*;
 use serde::Serialize;
 
@@ -19,7 +19,7 @@ async fn get_user() -> ApiResponse<User, DefaultMeta> {
     let user = User {
         id: "123"
             .parse()
-            .map_err(|e| ApiError::from_source(1, e, true, NONE_MSG).into())?,
+            .map_err(|e| ApiError::from_source(1, e, true, ()).into())?,
         name: "Andeya Lee",
         email: "andeya.lee@example.com",
     };

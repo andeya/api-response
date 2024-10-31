@@ -57,6 +57,55 @@ impl<K, V> DerefMut for OrderedHashMap<K, V> {
     }
 }
 
+pub enum MaybeString {
+    String(String),
+    Str(&'static str),
+    OptionString(Option<String>),
+    OptionStr(Option<&'static str>),
+    UnitTuple,
+}
+impl From<()> for MaybeString {
+    fn from(_: ()) -> Self {
+        MaybeString::UnitTuple
+    }
+}
+impl From<String> for MaybeString {
+    fn from(value: String) -> Self {
+        MaybeString::String(value)
+    }
+}
+impl From<&'static str> for MaybeString {
+    fn from(value: &'static str) -> Self {
+        MaybeString::Str(value)
+    }
+}
+impl From<Option<String>> for MaybeString {
+    fn from(value: Option<String>) -> Self {
+        MaybeString::OptionString(value)
+    }
+}
+impl From<Option<&'static str>> for MaybeString {
+    fn from(value: Option<&'static str>) -> Self {
+        MaybeString::OptionStr(value)
+    }
+}
+impl MaybeString {
+    pub fn into_option_string(self) -> Option<String> {
+        match self {
+            MaybeString::String(v) => Some(v),
+            MaybeString::Str(v) => Some(v.to_owned()),
+            MaybeString::OptionString(v) => v,
+            MaybeString::OptionStr(v) => v.map(|v| v.to_owned()),
+            MaybeString::UnitTuple => None,
+        }
+    }
+}
+impl From<MaybeString> for Option<String> {
+    fn from(value: MaybeString) -> Self {
+        value.into_option_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;

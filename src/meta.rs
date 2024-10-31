@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::utils::OrderedHashMap;
+use crate::{utils::OrderedHashMap, MaybeString};
 
 /// Default meta type
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
@@ -47,13 +47,13 @@ impl DefaultMeta {
     pub fn with_links_info(
         mut self,
         self_link: impl Into<String>,
-        next: Option<impl Into<String>>,
-        prev: Option<impl Into<String>>,
+        next: impl Into<MaybeString>,
+        prev: impl Into<MaybeString>,
     ) -> Self {
         self.links = Some(Links {
             self_link: self_link.into(),
-            next: next.map(Into::into),
-            prev: prev.map(Into::into),
+            next: next.into().into_option_string(),
+            prev: prev.into().into_option_string(),
         });
         self
     }

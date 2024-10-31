@@ -2,9 +2,7 @@ use std::{self, collections::HashMap, error::Error, fmt, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{utils::OrderedHashMap, ApiResponse};
-
-pub const NONE_MSG: Option<&str> = None;
+use crate::{utils::OrderedHashMap, ApiResponse, MaybeString};
 
 /// Struct to represent an error response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
@@ -33,7 +31,7 @@ impl<Meta> ErrorResponse<Meta> {
         code: impl Into<i32>,
         source: impl Error + Send + Sync + 'static,
         set_source_detail: bool,
-        message: Option<impl Into<String>>,
+        message: impl Into<MaybeString>,
     ) -> Self {
         Self::from_error(ApiError::from_source(code, source, set_source_detail, message))
     }
@@ -73,7 +71,7 @@ impl<Meta> ErrorResponse<Meta> {
     }
     #[inline]
     pub fn message(&self) -> &String {
-        &self.error.message()
+        self.error.message()
     }
     #[inline]
     pub fn details(&self) -> Option<&HashMap<String, String>> {
@@ -159,11 +157,14 @@ impl ApiError {
         code: impl Into<i32>,
         source: impl Error + Send + Sync + 'static,
         set_source_detail: bool,
-        message: Option<impl Into<String>>,
+        message: impl Into<MaybeString>,
     ) -> Self {
         let mut e = ApiError {
             code: code.into(),
-            message: message.map_or_else(|| source.to_string(), Into::into),
+            message: message
+                .into()
+                .into_option_string()
+                .map_or_else(|| source.to_string(), Into::into),
             details: None,
             source: Some(Arc::new(source)),
         };
@@ -225,10 +226,7 @@ impl ApiError {
     }
     #[inline]
     pub fn detail(&self, key: impl AsRef<str>) -> Option<&String> {
-        if self.details.is_none() {
-            return None;
-        }
-        self.details.as_ref().unwrap().get(key.as_ref())
+        self.details.as_ref()?.get(key.as_ref())
     }
     pub fn is<E: Error + 'static>(&self) -> bool {
         match &self.source {
