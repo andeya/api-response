@@ -57,6 +57,7 @@ impl<K, V> DerefMut for OrderedHashMap<K, V> {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum MaybeString {
     String(String),
     Str(&'static str),
@@ -90,7 +91,7 @@ impl From<Option<&'static str>> for MaybeString {
     }
 }
 impl MaybeString {
-    pub fn into_option_string(self) -> Option<String> {
+    pub fn option_string(self) -> Option<String> {
         match self {
             MaybeString::String(v) => Some(v),
             MaybeString::Str(v) => Some(v.to_owned()),
@@ -99,10 +100,46 @@ impl MaybeString {
             MaybeString::UnitTuple => None,
         }
     }
+    pub fn expect(self, msg: &str) -> String {
+        match self {
+            MaybeString::String(v) => v,
+            MaybeString::Str(v) => v.to_owned(),
+            MaybeString::OptionString(v) => v.expect(msg),
+            MaybeString::OptionStr(v) => v.expect(msg).to_owned(),
+            MaybeString::UnitTuple => panic!("{msg}"),
+        }
+    }
+    pub fn unwrap_or(self, default: impl Into<String>) -> String {
+        match self {
+            MaybeString::String(v) => v,
+            MaybeString::Str(v) => v.to_owned(),
+            MaybeString::OptionString(v) => v.unwrap_or_else(|| default.into()),
+            MaybeString::OptionStr(v) => v.map_or_else(|| default.into(), |v| v.to_owned()),
+            MaybeString::UnitTuple => default.into(),
+        }
+    }
+    pub fn unwrap_or_else(self, f: impl FnOnce() -> String) -> String {
+        match self {
+            MaybeString::String(v) => v,
+            MaybeString::Str(v) => v.to_owned(),
+            MaybeString::OptionString(v) => v.unwrap_or_else(f),
+            MaybeString::OptionStr(v) => v.map_or_else(f, |v| v.to_owned()),
+            MaybeString::UnitTuple => f(),
+        }
+    }
+    pub fn unwrap_or_default(self) -> String {
+        match self {
+            MaybeString::String(v) => v,
+            MaybeString::Str(v) => v.to_owned(),
+            MaybeString::OptionString(v) => v.unwrap_or_default(),
+            MaybeString::OptionStr(v) => v.map_or_else(Default::default, |v| v.to_owned()),
+            MaybeString::UnitTuple => Default::default(),
+        }
+    }
 }
 impl From<MaybeString> for Option<String> {
     fn from(value: MaybeString) -> Self {
-        value.into_option_string()
+        value.option_string()
     }
 }
 

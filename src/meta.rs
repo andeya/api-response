@@ -52,8 +52,8 @@ impl DefaultMeta {
     ) -> Self {
         self.links = Some(Links {
             self_link: self_link.into(),
-            next: next.into().into_option_string(),
-            prev: prev.into().into_option_string(),
+            next: next.into().option_string(),
+            prev: prev.into().option_string(),
         });
         self
     }

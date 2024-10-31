@@ -128,6 +128,14 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
             ApiResponse::Error(error_response) => error_response.meta.as_ref(),
         }
     }
+    pub fn expect(self, expect_msg: &str) -> SuccessResponse<Data, Meta> {
+        match self {
+            ApiResponse::Success(success_response) => success_response,
+            ApiResponse::Error(_) => {
+                panic!("{expect_msg}")
+            }
+        }
+    }
     pub fn unwrap(self) -> SuccessResponse<Data, Meta> {
         match self {
             ApiResponse::Success(success_response) => success_response,
@@ -139,7 +147,7 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
     pub fn unwrap_err(self) -> ErrorResponse<Meta> {
         match self {
             ApiResponse::Success(_) => {
-                panic!("called `ApiResponse::unwrap()` on an `Error` value")
+                panic!("called `ApiResponse::unwrap_err()` on an `Error` value")
             }
             ApiResponse::Error(error_response) => error_response,
         }

@@ -163,7 +163,7 @@ impl ApiError {
             code: code.into(),
             message: message
                 .into()
-                .into_option_string()
+                .option_string()
                 .map_or_else(|| source.to_string(), Into::into),
             details: None,
             source: Some(Arc::new(source)),

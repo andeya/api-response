@@ -73,10 +73,7 @@ impl ErrorStatus {
     pub fn api_error(self, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self.into(),
-            message: message
-                .into()
-                .into_option_string()
-                .map_or_else(|| self.to_string(), Into::into),
+            message: message.into().unwrap_or_else(|| self.to_string()),
             details: None,
             source: None,
         }
@@ -85,10 +82,7 @@ impl ErrorStatus {
     pub fn api_error_one_segment(self, s1: CodeSegment, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self | s1,
-            message: message
-                .into()
-                .into_option_string()
-                .map_or_else(|| self.to_string(), Into::into),
+            message: message.into().unwrap_or_else(|| self.to_string()),
             details: None,
             source: None,
         }
@@ -97,10 +91,7 @@ impl ErrorStatus {
     pub fn api_error_two_segment(self, s1: CodeSegment, s2: CodeSegment, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self | s1 | s2,
-            message: message
-                .into()
-                .into_option_string()
-                .map_or_else(|| self.to_string(), Into::into),
+            message: message.into().unwrap_or_else(|| self.to_string()),
             details: None,
             source: None,
         }
@@ -115,10 +106,7 @@ impl ErrorStatus {
     ) -> ApiError {
         ApiError {
             code: self | s1 | s2 | s3,
-            message: message
-                .into()
-                .into_option_string()
-                .map_or_else(|| self.to_string(), Into::into),
+            message: message.into().unwrap_or_else(|| self.to_string()),
             details: None,
             source: None,
         }
