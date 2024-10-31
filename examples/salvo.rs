@@ -17,9 +17,7 @@ struct User {
 #[endpoint]
 async fn get_user() -> ApiResponse<User, DefaultMeta> {
     let user = User {
-        id: "123"
-            .parse()
-            .map_err(|e| ApiError::from_source(1, e, true, ()).into())?,
+        id: "123".parse().map_err(|e| ApiError::from_source(1, e, true, ()))?,
         name: "Andeya Lee",
         email: "andeya.lee@example.com",
     };

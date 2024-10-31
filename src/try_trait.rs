@@ -11,6 +11,12 @@ impl<Data, Meta> FromResidual<Result<Infallible, ErrorResponse<Meta>>> for ApiRe
     }
 }
 
+impl<Data, Meta> FromResidual<Result<Infallible, ApiError>> for ApiResponse<Data, Meta> {
+    fn from_residual(residual: Result<Infallible, ApiError>) -> Self {
+        ApiResponse::Error(ErrorResponse::from_error(residual.unwrap_err()))
+    }
+}
+
 impl<T, Meta> FromResidual<ApiResponse<Infallible, Meta>> for Result<T, ErrorResponse<Meta>> {
     fn from_residual(residual: ApiResponse<Infallible, Meta>) -> Self {
         Err(residual.unwrap_err())
@@ -50,7 +56,8 @@ impl<Data, Meta> FromResidual<ApiResponse<Infallible, Meta>> for ApiResponse<Dat
 mod tests {
     use crate::*;
     fn from_result_residual<Data, Meta>() -> ApiResponse<Data, Meta> {
-        Err(ErrorResponse::from_error_msg(1, "message"))?
+        Err(ErrorResponse::from_error_msg(1, "message"))?;
+        Err(ApiError::new(1, "message"))?
     }
     fn from_self_residual<Data, Meta>() -> ApiResponse<Data, Meta> {
         let x: SuccessResponse<Data, Meta> = ApiResponse::from_error_msg(1, "message")?;

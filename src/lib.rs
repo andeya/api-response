@@ -10,12 +10,11 @@
 //! * `error`: Contains the error handling structures.
 
 #![cfg_attr(feature = "try", feature(try_trait_v2))]
+#[cfg(feature = "try")]
+mod try_trait;
 
 #[cfg(feature = "salvo")]
 mod salvo_trait;
-
-#[cfg(feature = "try")]
-mod try_trait;
 
 mod error;
 pub mod error_status;
