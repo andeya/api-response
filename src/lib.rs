@@ -31,7 +31,7 @@ pub use meta::{DefaultMeta, Links};
 pub use result::ApiResult;
 pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
 pub use success::{ApiSuccessResponse, SuccessResponse};
-pub use utils::MaybeString;
+pub use utils::{ErrWrapper, IntoError, MaybeString};
 
 /// Enum to represent the overall API response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]

@@ -1,5 +1,7 @@
 use std::{
     collections::HashMap,
+    error::Error,
+    fmt::{Debug, Display},
     ops::{Deref, DerefMut},
 };
 
@@ -143,11 +145,30 @@ impl From<MaybeString> for Option<String> {
     }
 }
 
+#[derive(Debug)]
+pub struct ErrWrapper<E: Display>(pub E);
+
+impl<E: Debug + Display> Display for ErrWrapper<E> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl<E: Debug + Display> Error for ErrWrapper<E> {}
+
+pub trait IntoError: Debug + Display + Sized {
+    fn into_error(self) -> ErrWrapper<Self> {
+        ErrWrapper(self)
+    }
+}
+
+impl<E: Debug + Display + Sized> IntoError for E {}
+
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::{collections::HashMap, error::Error};
 
-    use crate::utils::OrderedHashMap;
+    use super::{IntoError, OrderedHashMap};
 
     #[test]
     fn ordered_hash_map() {
@@ -159,5 +180,12 @@ mod tests {
         assert_eq!(S, serde_json::to_string(&map1).unwrap());
         let map2: OrderedHashMap<&str, &str> = serde_json::from_str(S).unwrap();
         assert_eq!(S, serde_json::to_string(&map2).unwrap());
+    }
+
+    #[test]
+    fn error_wrapper() {
+        let e: super::ErrWrapper<i32> = 1.into_error();
+        let d: &dyn Error = &e;
+        assert_eq!("1", d.to_string())
     }
 }

@@ -31,7 +31,7 @@ async fn get_user() -> ApiResponse<User, DefaultMeta> {
 async fn get_error() -> ApiResponse<(), ()> {
     let err: ParseIntError = "@".parse::<u8>().unwrap_err();
     let api_error = INVALID_ARGUMENT
-        .api_error_one_segment(S01, Some("Invalid input data"))
+        .api_error_one_segment(S01, "Invalid input data")
         .with_detail("email", "Invalid email format")
         .with_source(err, true);
     println!("api_error={:?}", api_error.downcast_ref::<ParseIntError>().unwrap());
