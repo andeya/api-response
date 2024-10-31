@@ -46,6 +46,8 @@ mod tests {
             r##"ApiError { code: 12999999, message: "message", details: None }"##,
             format!("{:?}", BLOCK_ERROR3.invalid_argument("message"))
         );
+        const BLOCK_ERROR4: ApiErr = ApiErr::new3(S01, S02, S33).intro("this is intro");
+        assert_eq!(r##"[**010233]: this is intro"##, BLOCK_ERROR4.to_string());
     }
     #[test]
     fn api_err_x() {
@@ -64,5 +66,7 @@ mod tests {
             r##"ApiError { code: 12999999, message: "message", details: None }"##,
             format!("{:?}", BLOCK_ERROR3.invalid_argument(S99, "message"))
         );
+        const BLOCK_ERROR4: ApiErrX = ApiErrX::new3(S11, S02).intro("this is intro");
+        assert_eq!(r##"[**1102**]: this is intro"##, BLOCK_ERROR4.to_string());
     }
 }
