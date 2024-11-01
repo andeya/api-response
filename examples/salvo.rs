@@ -2,7 +2,7 @@
 
 use std::num::ParseIntError;
 
-use api_response::{error_code::*, ApiError, ApiResponse, ApiSuccessResponse, DefaultMeta};
+use api_response::{error_code::*, prelude::*};
 use salvo::prelude::*;
 use serde::Serialize;
 

@@ -1,6 +1,6 @@
 [package]
 name = "api-response"
-version = "0.10.2"
+version = "0.10.3"
 edition = "2021"
 license = "MIT"
 description = "A consistent structure for API responses, including success and error handling."
@@ -19,6 +19,7 @@ salvo = { version = ">=0.74", default-features = false, features = [
 ], optional = true }
 num_enum = "0.7"
 http = ">=1"
+inventory = "~0.3.15"
 
 [dev-dependencies]
 serde_json = "^1.0"
@@ -26,6 +27,6 @@ tokio = { version = "^1.41" }
 salvo = { version = ">=0.74", features = ["oapi"] }
 
 [features]
-# default = ["try", "salvo"]
+default = ["try", "salvo"]
 salvo = ["dep:salvo"]
 try = []

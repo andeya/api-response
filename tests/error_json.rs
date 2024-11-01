@@ -1,4 +1,4 @@
-use api_response::*;
+use api_response::prelude::*;
 
 #[test]
 fn error_json() {
@@ -10,8 +10,8 @@ fn error_json() {
         DefaultMeta::new("request_id")
             .with_links_info(
                 "http:://andeya.example.com/b",
-                Some("http:://andeya.example.com/c"),
-                Some("http:://andeya.example.com/a"),
+                "http:://andeya.example.com/c",
+                "http:://andeya.example.com/a",
             )
             .insert_custom("key", "value"),
     );

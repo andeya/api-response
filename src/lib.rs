@@ -25,12 +25,21 @@ mod utils;
 
 use std::{error::Error, fmt::Debug};
 
-pub use error::{ApiError, ErrorResponse};
-pub use meta::{DefaultMeta, Links};
-pub use result::ApiResult;
-pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
-pub use success::{ApiSuccessResponse, SuccessResponse};
-pub use utils::{ErrWrapper, IntoError, MaybeString};
+pub use prelude::*;
+pub mod prelude {
+    pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
+
+    pub use crate::{
+        api_err,
+        error::{ApiError, ErrorResponse},
+        error_code,
+        meta::{DefaultMeta, Links},
+        result::ApiResult,
+        success::{ApiSuccessResponse, SuccessResponse},
+        utils::{ErrWrapper, IntoError, MaybeString},
+        ApiResponse,
+    };
+}
 
 /// Enum to represent the overall API response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]

@@ -9,10 +9,10 @@ use crate::{ApiError, MaybeString};
 /// A builder for quickly creating `ApiError`.
 #[derive(Debug)]
 pub struct ApiErr {
-    intro: &'static str,
-    s1: Option<CodeSegment>,
-    s2: Option<CodeSegment>,
-    s3: Option<CodeSegment>,
+    pub(crate) intro: &'static str,
+    pub(crate) s1: Option<CodeSegment>,
+    pub(crate) s2: Option<CodeSegment>,
+    pub(crate) s3: Option<CodeSegment>,
 }
 
 impl ApiErr {
@@ -217,13 +217,13 @@ impl ApiErrX {
 
 impl Display for ApiErr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        const X: &str = "**";
+        const A: &str = "**";
         write!(
             f,
-            "[**{:0>2}{:0>2}{:0>2}]: {}",
-            self.s1.map_or_else(|| X.to_owned(), |v| (v as i32).to_string()),
-            self.s2.map_or_else(|| X.to_owned(), |v| (v as i32).to_string()),
-            self.s3.map_or_else(|| X.to_owned(), |v| (v as i32).to_string()),
+            "[??{:0>2}{:0>2}{:0>2}]: {}",
+            self.s1.map_or_else(|| A.to_owned(), |v| (v as i32).to_string()),
+            self.s2.map_or_else(|| A.to_owned(), |v| (v as i32).to_string()),
+            self.s3.map_or_else(|| A.to_owned(), |v| (v as i32).to_string()),
             self.intro
         )
     }
@@ -231,12 +231,12 @@ impl Display for ApiErr {
 
 impl Display for ApiErrX {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        const X: &str = "**";
+        const A: &str = "**";
         write!(
             f,
-            "[**{:0>2}{:0>2}**]: {}",
-            self.s1.map_or_else(|| X.to_owned(), |v| (v as i32).to_string()),
-            self.s2.map_or_else(|| X.to_owned(), |v| (v as i32).to_string()),
+            "[??{:0>2}{:0>2}**]: {}",
+            self.s1.map_or_else(|| A.to_owned(), |v| (v as i32).to_string()),
+            self.s2.map_or_else(|| A.to_owned(), |v| (v as i32).to_string()),
             self.intro
         )
     }
