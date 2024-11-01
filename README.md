@@ -86,7 +86,7 @@ use api_response::prelude::*;
 #[test]
 fn success_json() {
     const SUCCESS: &str = r##"{"status":"success","data":"success data","meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
-    let api_response = ApiResponse::from_success(
+    let api_response = ApiResponse::new_success(
         "success data",
         DefaultMeta::new("request_id")
             .with_links_info(
@@ -104,7 +104,7 @@ fn success_json() {
 #[test]
 fn error_json() {
     const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
-    let api_response = ApiResponse::<(), _>::from_error(
+    let api_response = ApiResponse::<(), _>::new_error(
         ApiError::new(404, "error message")
             .with_detail("key", "value")
             .with_source("@".parse::<u8>().unwrap_err(), true),

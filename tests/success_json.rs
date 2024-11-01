@@ -3,7 +3,7 @@ use api_response::prelude::*;
 #[test]
 fn success_json() {
     const SUCCESS: &str = r##"{"status":"success","data":"success data","meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
-    let api_response = ApiResponse::from_success(
+    let api_response = ApiResponse::new_success(
         "success data",
         DefaultMeta::new("request_id")
             .with_links_info(

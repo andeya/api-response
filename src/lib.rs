@@ -70,24 +70,24 @@ impl<Data, Meta> From<ApiError> for ApiResponse<Data, Meta> {
 
 impl<Data, Meta> ApiResponse<Data, Meta> {
     #[inline(always)]
-    pub fn new_success(data: Data, meta: Option<Meta>) -> Self {
+    pub fn new_success(data: Data, meta: Meta) -> Self {
         Self::Success(SuccessResponse::new(data, meta))
     }
     #[inline(always)]
-    pub fn from_success(data: Data, meta: Meta) -> Self {
-        Self::Success(SuccessResponse::new(data, Some(meta)))
+    pub fn from_success(data: Data) -> Self {
+        Self::Success(SuccessResponse::from_data(data))
     }
     #[inline(always)]
     pub fn from_success_data(data: Data) -> Self {
         Self::Success(SuccessResponse::from_data(data))
     }
     #[inline(always)]
-    pub fn new_error(error: ApiError, meta: Option<Meta>) -> Self {
+    pub fn new_error(error: ApiError, meta: Meta) -> Self {
         Self::Error(ErrorResponse::new(error, meta))
     }
     #[inline(always)]
-    pub fn from_error(error: ApiError, meta: Meta) -> Self {
-        Self::Error(ErrorResponse::new(error, Some(meta)))
+    pub fn from_error(error: ApiError) -> Self {
+        Self::Error(ErrorResponse::from_error(error))
     }
     #[inline(always)]
     pub fn from_error_msg(code: impl Into<i32>, message: impl Into<String>) -> Self {

@@ -13,8 +13,8 @@ pub struct SuccessResponse<Data, Meta> {
 
 impl<Data, Meta> SuccessResponse<Data, Meta> {
     #[inline(always)]
-    pub fn new(data: Data, meta: Option<Meta>) -> Self {
-        SuccessResponse { data, meta }
+    pub fn new(data: Data, meta: Meta) -> Self {
+        SuccessResponse { data, meta: Some(meta) }
     }
     #[inline(always)]
     pub fn from_data(data: Data) -> Self {

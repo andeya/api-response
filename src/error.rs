@@ -15,8 +15,11 @@ pub struct ErrorResponse<Meta> {
 
 impl<Meta> ErrorResponse<Meta> {
     #[inline(always)]
-    pub fn new(error: ApiError, meta: Option<Meta>) -> Self {
-        ErrorResponse { error, meta }
+    pub fn new(error: ApiError, meta: Meta) -> Self {
+        ErrorResponse {
+            error,
+            meta: Some(meta),
+        }
     }
     #[inline(always)]
     pub fn from_error(error: ApiError) -> Self {
