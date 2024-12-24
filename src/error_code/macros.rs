@@ -6,7 +6,8 @@ pub use inventory;
 use super::CodeSegment;
 use crate::error_code::ApiErr;
 
-/// Quickly create an `ApiError` builder `ApiErr` and collect error code mode information.
+/// Quickly create an `ApiError` builder `ApiErr` and collect error code mode
+/// information.
 #[macro_export]
 macro_rules! api_err {
     ($intro:expr) => {{
@@ -35,7 +36,8 @@ macro_rules! api_err {
     }};
 }
 
-/// Quickly create an `ApiError` builder `ApiErrX` and collect error code mode information.
+/// Quickly create an `ApiError` builder `ApiErrX` and collect error code mode
+/// information.
 #[macro_export]
 macro_rules! api_err_x {
     ($intro:expr) => {{
@@ -71,6 +73,7 @@ pub fn error_code_mode_iter() -> impl Iterator<Item = &'static ErrorCodeMode> {
 inventory::collect!(ErrorCodeMode);
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct ErrorCodeMode {
     pub intro: &'static str,
     pub segment1: Option<CodeSegment>,

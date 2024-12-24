@@ -1,8 +1,8 @@
 use std::{fmt::Display, ops::BitOr};
 
-use num_enum::{IntoPrimitive, TryFromPrimitive};
 pub use CodeSegment::*;
 pub use ErrorCode::*;
+use num_enum::{IntoPrimitive, TryFromPrimitive};
 
 use crate::{ApiError, MaybeString};
 
@@ -56,7 +56,7 @@ impl Display for ErrorCode {
 }
 
 impl ErrorCode {
-    pub fn maybe_client_error(self) -> bool {
+    pub const fn maybe_client_error(self) -> bool {
         matches!(
             self,
             ErrorCode::CANCELLED
@@ -78,7 +78,8 @@ impl ErrorCode {
             source: None,
         }
     }
-    /// Generate an `ApiError`, and append 2*1 digits at the end of the current code in the form of a decimal literal.
+    /// Generate an `ApiError`, and append 2*1 digits at the end of the current
+    /// code in the form of a decimal literal.
     pub fn api_error1(self, s1: CodeSegment, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self | s1,
@@ -87,7 +88,8 @@ impl ErrorCode {
             source: None,
         }
     }
-    /// Generate an `ApiError`, and append 2*2 digits at the end of the current code in the form of a decimal literal.
+    /// Generate an `ApiError`, and append 2*2 digits at the end of the current
+    /// code in the form of a decimal literal.
     pub fn api_error2(self, s1: CodeSegment, s2: CodeSegment, message: impl Into<MaybeString>) -> ApiError {
         ApiError {
             code: self | s1 | s2,
@@ -96,7 +98,8 @@ impl ErrorCode {
             source: None,
         }
     }
-    /// Generate an `ApiError`, and append 2*3 digits at the end of the current code in the form of a decimal literal.
+    /// Generate an `ApiError`, and append 2*3 digits at the end of the current
+    /// code in the form of a decimal literal.
     pub fn api_error3(
         self,
         s1: CodeSegment,
@@ -115,6 +118,7 @@ impl ErrorCode {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
+#[non_exhaustive]
 pub enum CodeSegment {
     S01 = 1,
     S02 = 2,
@@ -218,6 +222,7 @@ pub enum CodeSegment {
 }
 
 impl From<CodeSegment> for i32 {
+    #[allow(clippy::as_conversions)]
     fn from(value: CodeSegment) -> Self {
         value as i32
     }
@@ -230,10 +235,10 @@ impl BitOr<CodeSegment> for ErrorCode {
     type Output = i32;
 
     fn bitor(self, rhs: CodeSegment) -> Self::Output {
-        (self as i32)
+        i32::from(self)
             .checked_mul(100)
             .expect(OVERFLOW)
-            .checked_add(rhs as i32)
+            .checked_add(i32::from(rhs))
             .expect(OVERFLOW)
     }
 }
@@ -245,7 +250,7 @@ impl BitOr<CodeSegment> for i32 {
     fn bitor(self, rhs: CodeSegment) -> Self::Output {
         self.checked_mul(100)
             .expect(OVERFLOW)
-            .checked_add(rhs as i32)
+            .checked_add(i32::from(rhs))
             .expect(OVERFLOW)
     }
 }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{utils::OrderedHashMap, MaybeString};
+use crate::{MaybeString, utils::OrderedHashMap};
 
 /// Default meta type
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
@@ -21,6 +21,7 @@ pub struct DefaultMeta {
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub struct Links {
     pub self_link: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -35,7 +36,7 @@ impl DefaultMeta {
         Self {
             request_id: request_id.into(),
             links: None,
-            custom: Default::default(),
+            custom: OrderedHashMap::default(),
         }
     }
     #[inline(always)]
@@ -63,10 +64,10 @@ impl DefaultMeta {
         self
     }
     #[inline]
-    pub fn request_id(&self) -> &String {
+    pub const fn request_id(&self) -> &String {
         &self.request_id
     }
-    pub fn links(&self) -> Option<&Links> {
+    pub const fn links(&self) -> Option<&Links> {
         self.links.as_ref()
     }
     pub fn custom(&self) -> &HashMap<String, String> {

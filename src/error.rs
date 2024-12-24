@@ -2,11 +2,12 @@ use std::{self, collections::HashMap, error::Error, fmt, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{utils::OrderedHashMap, ApiResponse, MaybeString};
+use crate::{ApiResponse, MaybeString, utils::OrderedHashMap};
 
 /// Struct to represent an error response
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct ErrorResponse<Meta> {
     pub error: ApiError,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -15,14 +16,14 @@ pub struct ErrorResponse<Meta> {
 
 impl<Meta> ErrorResponse<Meta> {
     #[inline(always)]
-    pub fn new(error: ApiError, meta: Meta) -> Self {
+    pub const fn new(error: ApiError, meta: Meta) -> Self {
         ErrorResponse {
             error,
             meta: Some(meta),
         }
     }
     #[inline(always)]
-    pub fn from_error(error: ApiError) -> Self {
+    pub const fn from_error(error: ApiError) -> Self {
         ErrorResponse { error, meta: None }
     }
     #[inline(always)]
@@ -69,11 +70,11 @@ impl<Meta> ErrorResponse<Meta> {
         self
     }
     #[inline]
-    pub fn code(&self) -> i32 {
+    pub const fn code(&self) -> i32 {
         self.error.code()
     }
     #[inline]
-    pub fn message(&self) -> &String {
+    pub const fn message(&self) -> &String {
         self.error.message()
     }
     #[inline]
@@ -138,6 +139,7 @@ impl fmt::Display for ApiError {
 }
 
 impl Error for ApiError {
+    #[allow(clippy::as_conversions)]
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source
             .as_ref()
@@ -188,10 +190,7 @@ impl ApiError {
     }
     #[inline]
     pub fn set_detail(&mut self, key: impl Into<String>, value: impl Into<String>) -> &mut Self {
-        if self.details.is_none() {
-            self.details = Some(Default::default());
-        }
-        self.details.as_mut().unwrap().insert(key.into(), value.into());
+        self.details.get_or_insert_default().insert(key.into(), value.into());
         self
     }
     #[inline(always)]
@@ -216,11 +215,11 @@ impl ApiError {
         self
     }
     #[inline]
-    pub fn code(&self) -> i32 {
+    pub const fn code(&self) -> i32 {
         self.code
     }
     #[inline]
-    pub fn message(&self) -> &String {
+    pub const fn message(&self) -> &String {
         &self.message
     }
     #[inline]
@@ -243,18 +242,18 @@ impl ApiError {
             None => None,
         }
     }
-    pub fn api_response<Data, Meta>(self, meta: Option<Meta>) -> ApiResponse<Data, Meta> {
+    pub const fn api_response<Data, Meta>(self, meta: Option<Meta>) -> ApiResponse<Data, Meta> {
         ApiResponse::Error(ErrorResponse { error: self, meta })
     }
     #[inline(always)]
-    pub fn api_response_without_meta<Data, Meta>(self) -> ApiResponse<Data, Meta>
+    pub const fn api_response_without_meta<Data, Meta>(self) -> ApiResponse<Data, Meta>
     where
         Self: Sized,
     {
         self.api_response(None)
     }
     #[inline(always)]
-    pub fn api_response_with_meta<Data, Meta>(self, meta: Meta) -> ApiResponse<Data, Meta>
+    pub const fn api_response_with_meta<Data, Meta>(self, meta: Meta) -> ApiResponse<Data, Meta>
     where
         Self: Sized,
     {

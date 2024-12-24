@@ -1,0 +1,23 @@
+# -------- https://rust-coding-guidelines.github.io/rust-coding-guidelines-zh/ --------
+# -------- https://rust-lang.github.io/rust-clippy/master/index.html --------
+
+# This lint will not trigger if the function is an exported API. This avoids suggesting changes that would break the API. Default is true
+avoid-breaking-exported-api = true
+
+# [RECOMMENDED] G.VAR.01 Avoid using too many meaningless variable names when destructuring tuples with more than four variables
+single-char-binding-names-threshold = 4
+
+# [RECOMMENDED] G.TYP.SCT.02 Consider refactoring when a struct contains more than three boolean fields
+max-struct-bools = 3
+
+# [RECOMMENDED] G.FUD.03 Configures the maximum number of boolean parameters allowed in a function, which is 3 by default.
+max-fn-params-bools = 3
+
+# [RECOMMENDED] G.TYP.ENM.06 Variants within an enum should not differ significantly in size. Default is 200 bytes
+enum-variant-size-threshold = 200
+
+# [REQUIRED] G.FUD.01 Limit the number of function parameters to no more than five
+too-many-arguments-threshold = 5
+
+# Determines if wildcard imports in prelude and super (in test modules) should be warned. Default is false
+warn-on-all-wildcard-imports = false

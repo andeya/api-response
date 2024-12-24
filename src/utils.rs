@@ -5,7 +5,7 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use serde::{ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, ser::SerializeMap};
 
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Debug, Default)]
@@ -60,6 +60,7 @@ impl<K, V> DerefMut for OrderedHashMap<K, V> {
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[non_exhaustive]
 pub enum MaybeString {
     String(String),
     Str(&'static str),
@@ -98,10 +99,12 @@ impl MaybeString {
             MaybeString::String(v) => Some(v),
             MaybeString::Str(v) => Some(v.to_owned()),
             MaybeString::OptionString(v) => v,
-            MaybeString::OptionStr(v) => v.map(|v| v.to_owned()),
+            MaybeString::OptionStr(v) => v.map(ToOwned::to_owned),
             MaybeString::UnitTuple => None,
         }
     }
+    /// # Panics
+    /// If the string is none, trigger a panic using the `msg` parameter.
     pub fn expect(self, msg: &str) -> String {
         match self {
             MaybeString::String(v) => v,
@@ -116,7 +119,7 @@ impl MaybeString {
             MaybeString::String(v) => v,
             MaybeString::Str(v) => v.to_owned(),
             MaybeString::OptionString(v) => v.unwrap_or_else(|| default.into()),
-            MaybeString::OptionStr(v) => v.map_or_else(|| default.into(), |v| v.to_owned()),
+            MaybeString::OptionStr(v) => v.map_or_else(|| default.into(), ToOwned::to_owned),
             MaybeString::UnitTuple => default.into(),
         }
     }
@@ -125,7 +128,7 @@ impl MaybeString {
             MaybeString::String(v) => v,
             MaybeString::Str(v) => v.to_owned(),
             MaybeString::OptionString(v) => v.unwrap_or_else(f),
-            MaybeString::OptionStr(v) => v.map_or_else(f, |v| v.to_owned()),
+            MaybeString::OptionStr(v) => v.map_or_else(f, ToOwned::to_owned),
             MaybeString::UnitTuple => f(),
         }
     }
@@ -134,8 +137,8 @@ impl MaybeString {
             MaybeString::String(v) => v,
             MaybeString::Str(v) => v.to_owned(),
             MaybeString::OptionString(v) => v.unwrap_or_default(),
-            MaybeString::OptionStr(v) => v.map_or_else(Default::default, |v| v.to_owned()),
-            MaybeString::UnitTuple => Default::default(),
+            MaybeString::OptionStr(v) => v.map_or_else(Default::default, ToOwned::to_owned),
+            MaybeString::UnitTuple => String::default(),
         }
     }
 }
@@ -146,6 +149,7 @@ impl From<MaybeString> for Option<String> {
 }
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct ErrWrapper<E: Display>(pub E);
 
 impl<E: Debug + Display> Display for ErrWrapper<E> {

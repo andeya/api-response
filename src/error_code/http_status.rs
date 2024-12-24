@@ -5,8 +5,8 @@ use super::ErrorCode;
 impl From<ErrorCode> for StatusCode {
     fn from(value: ErrorCode) -> Self {
         match value {
-            ErrorCode::CANCELLED => StatusCode::from_u16(499).unwrap(),
-            ErrorCode::UNKNOWN => StatusCode::from_u16(520).unwrap(),
+            ErrorCode::CANCELLED => unsafe { StatusCode::from_u16(499).unwrap_unchecked() },
+            ErrorCode::UNKNOWN => unsafe { StatusCode::from_u16(520).unwrap_unchecked() },
             ErrorCode::INVALID_ARGUMENT => StatusCode::BAD_REQUEST,
             ErrorCode::DEADLINE_EXCEEDED => StatusCode::GATEWAY_TIMEOUT,
             ErrorCode::NOT_FOUND => StatusCode::NOT_FOUND,

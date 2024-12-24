@@ -1,8 +1,7 @@
 use salvo::{
-    async_trait,
+    Scribe, async_trait,
     oapi::{Components, Content, EndpointOutRegister, Operation, RefOr, Response, ToResponse, ToSchema},
     writing::Json,
-    Scribe,
 };
 use serde::{Deserialize, Serialize};
 
@@ -65,7 +64,7 @@ where
 #[cfg(test)]
 mod tests {
     use salvo::prelude::*;
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
 
     use crate::*;
     #[endpoint]

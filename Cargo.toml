@@ -1,6 +1,6 @@
 [package]
 name = "api-response"
-version = "0.11.0"
+version = "0.11.1"
 edition = "2021"
 license = "MIT"
 description = "A consistent structure for API responses, including success and error handling."
@@ -8,6 +8,7 @@ repository = "https://github.com/andeya/api-response"
 documentation = "https://docs.rs/api-response"
 readme = "README.md"
 keywords = ["api", "http", "rpc", "response"]
+categories = ["web-programming", "data-structures"]
 authors = ["Andeya Lee <andeyalee@outlook.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
