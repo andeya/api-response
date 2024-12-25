@@ -30,6 +30,6 @@ tokio = { version = "^1.41" }
 salvo = { version = ">=0.74", features = ["oapi"] }
 
 [features]
-default = ["try", "salvo"]
+# default = ["try", "salvo"]
 salvo = ["dep:salvo"]
 try = []
