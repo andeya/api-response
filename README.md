@@ -22,59 +22,121 @@ Run the following Cargo command in your project directory:
 cargo add api-response
 ```
 
-Or add the following line to your Cargo.toml:
+## Unified API Response Structure
 
-```toml
-api-response = { version = "0.10", features = ["try"] }
+#### Top-Level Fields
+
+| **Field Name** | **Type & Example**       | **Required**                  | **Meaning**           | **Description**                                               |
+| -------------- | ------------------------ | ----------------------------- | --------------------- | ------------------------------------------------------------- |
+| status         | `"success"` or `"error"` | Yes                           | Status of the request | Indicates whether the request was successful.                 |
+| data           | `Any`                    | Required in success responses | Response data         | The data returned when the request is successful.             |
+| error          | `ApiError` object        | Required in error responses   | Error information     | The error information object returned when the request fails. |
+| meta           | `DefaultMeta` object     | No                            | Metadata information  | Metadata about the request.                                   |
+
+#### `ApiError` Object Fields
+
+| **Field Name** | **Type & Example**   | **Required** | **Meaning**   | **Description**                                                                                                                      |
+| -------------- | -------------------- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| code           | `404`                | Yes          | Error code    | A code that identifies the type of error.                                                                                            |
+| message        | `"error message"`    | Yes          | Error message | Text description of the error.                                                                                                       |
+| details        | `{ "key": "value" }` | No           | Error details | The field is of the `map<string, string>` type and can be used to pass the front-end display configuration, error details and so on. |
+
+#### `DefaultMeta` Object Fields
+
+| **Meta Field** | **Type & Example**                                                                                           | **Required** | **Meaning**                                          | **Description**                                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------ | ------------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `requestId`    | `"abc4567890"`                                                                                               | No           | Request tracking information                         | Included in the Response Body to maintain consistent data structure in non-standard protocols such as RPC, MQ, etc.                                            |
+| `user`         | `{ "id": "user-123", "roles": ["admin", "editor"] }`                                                         | No           | The permission information of the current user, etc. | Notifies the client about the permissions the current user has for this request.                                                                               |
+| `pagination`   | `{ "currentPage": 1, "pageSize": 10, "totalPages": 5, "totalRecords": 50, "nextPage": 2, "prevPage": null }` | No           | Pagination information                               | Helps clients with pagination navigation, displaying, and retrieving more data.                                                                                |
+| `rateLimit`    | `{ "limit": 1000, "remaining": 990, "restoreRate": 50, "resetAt": "2021-01-01T00:00:00Z" }`                  | No           | Rate limiting information                            | Includes the limit, remaining calls, restore rate, and reset time, helping clients manage API call frequencies to avoid rate limit issues.                     |
+| `cost`         | `{ "actualCost": 10, "requestedQueryCost": 10, "executionTime": "250ms" }`                                   | No           | Cost statistics                                      | Provides the cost statistics of the request operation, helping clients understand API resource consumption.                                                    |
+| `apiVersion`   | `"v1.0.1"`                                                                                                   | No           | Current API version information                      | Ensures the API version consistency between client and server, beneficial for compatibility management, suitable for internal use or frequently iterated APIs. |
+
+#### JSON Examples
+
+**Success Response Example:**
+
+```json
+{
+    "status": "success",
+    "data": "success data",
+    "meta": {
+        "requestId": "abc4567890",
+        "user": {
+            "id": "user-123",
+            "roles": [
+                "admin",
+                "editor"
+            ]
+        },
+        "pagination": {
+            "currentPage": 1,
+            "pageSize": 10,
+            "totalPages": 5,
+            "totalRecords": 50,
+            "nextPage": 2,
+            "prevPage": null
+        },
+        "rateLimit": {
+            "limit": 1000,
+            "remaining": 990,
+            "restoreRate": 50,
+            "resetAt": "2021-01-01T00:00:00Z"
+        },
+        "cost": {
+            "actualCost": 10,
+            "requestedQueryCost": 10,
+            "executionTime": "250ms"
+        },
+        "apiVersion": "v1.0.1"
+    }
+}
 ```
 
-## Format
+**Error Response Example:**
 
--   Success example:
-
-    ```json
-    {
-        "status": "success",
-        "data": "success data",
-        "meta": {
-            "requestId": "request_id",
-            "links": {
-                "selfLink": "http:://andeya.example.com/b",
-                "next": "http:://andeya.example.com/c",
-                "prev": "http:://andeya.example.com/a"
-            },
-            "custom": {
-                "key": "value"
-            }
+```json
+{
+    "status": "error",
+    "error": {
+        "code": 404,
+        "message": "error message",
+        "details": {
+            "key": "value"
         }
-    }
-    ```
-
--   Error example
-
-    ```json
-    {
-        "status": "error",
-        "error": {
-            "code": 404,
-            "message": "error message",
-            "details": {
-                "key": "value"
-            }
+    },
+    "meta": {
+        "requestId": "abc4567890",
+        "user": {
+            "id": "user-123",
+            "roles": [
+                "admin",
+                "editor"
+            ]
         },
-        "meta": {
-            "requestId": "request_id",
-            "links": {
-                "selfLink": "http:://andeya.example.com/b",
-                "next": "http:://andeya.example.com/c",
-                "prev": "http:://andeya.example.com/a"
-            },
-            "custom": {
-                "key": "value"
-            }
-        }
+        "pagination": {
+            "currentPage": 1,
+            "pageSize": 10,
+            "totalPages": 5,
+            "totalRecords": 50,
+            "nextPage": 2,
+            "prevPage": null
+        },
+        "rateLimit": {
+            "limit": 1000,
+            "remaining": 990,
+            "restoreRate": 50,
+            "resetAt": "2021-01-01T00:00:00Z"
+        },
+        "cost": {
+            "actualCost": 10,
+            "requestedQueryCost": 10,
+            "executionTime": "250ms"
+        },
+        "apiVersion": "v1.0.1"
     }
-    ```
+}
+```
 
 ## Example
 
@@ -85,15 +147,12 @@ use api_response::prelude::*;
 
 #[test]
 fn success_json() {
-    const SUCCESS: &str = r##"{"status":"success","data":"success data","meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
+    const SUCCESS: &str = r##"{"status":"success","data":"success data","meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##;
     let api_response = ApiResponse::new_success(
         "success data",
-        DefaultMeta::new("request_id")
-            .with_links_info(
-                "http:://andeya.example.com/b",
-                "http:://andeya.example.com/c",
-                "http:://andeya.example.com/a",
-            )
+        DefaultMeta::new()
+            .with_request_id("request_id")
+            .with_pagination(Some(Pagination::default().with_current_page(1)))
             .insert_custom("key", "value"),
     );
     println!("{}", serde_json::to_string_pretty(&api_response).unwrap());
@@ -103,17 +162,14 @@ fn success_json() {
 
 #[test]
 fn error_json() {
-    const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","links":{"selfLink":"http:://andeya.example.com/b","next":"http:://andeya.example.com/c","prev":"http:://andeya.example.com/a"},"custom":{"key":"value"}}}"##;
+    const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##;
     let api_response = ApiResponse::<(), _>::new_error(
         ApiError::new(404, "error message")
             .with_detail("key", "value")
             .with_source("@".parse::<u8>().unwrap_err(), true),
-        DefaultMeta::new("request_id")
-            .with_links_info(
-                "http:://andeya.example.com/b",
-                "http:://andeya.example.com/c",
-                "http:://andeya.example.com/a",
-            )
+        DefaultMeta::new()
+            .with_request_id("request_id")
+            .with_pagination(Some(Pagination::default().with_current_page(1)))
             .insert_custom("key", "value"),
     );
     println!("{}", serde_json::to_string_pretty(&api_response).unwrap());
@@ -140,7 +196,7 @@ async fn get_user() -> Json<ApiResponse<Value, DefaultMeta>> {
         "name": "Andeya Lee",
         "email": "andeya.lee@example.com"
     });
-    Json((user, DefaultMeta::new("abc-123")).into())
+    Json((user, DefaultMeta::new().with_request_id("abc-123")).into())
 }
 
 /// get error

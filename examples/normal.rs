@@ -20,7 +20,7 @@ async fn get_user() -> Json<ApiResponse<User, DefaultMeta>> {
         name: "Andeya Lee",
         email: "andeya.lee@example.com",
     };
-    Json(user.api_response_with_meta(DefaultMeta::new("abc-123")))
+    Json(user.api_response_with_meta(DefaultMeta::new().with_request_id("abc-123")))
 }
 
 /// get error

@@ -74,6 +74,6 @@ mod tests {
             "name": "Andeya Lee",
             "email": "andeya.lee@example.com"
         });
-        user.api_response_with_meta(DefaultMeta::new("abc-123"))
+        user.api_response_with_meta(DefaultMeta::new().with_request_id("abc-123"))
     }
 }
