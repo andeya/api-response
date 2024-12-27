@@ -126,6 +126,8 @@ mod salvo_trait;
 
 mod error;
 pub mod error_code;
+#[cfg(feature = "lite")]
+pub(crate) mod lite;
 mod meta;
 mod result;
 mod success;
@@ -149,9 +151,9 @@ pub mod prelude {
 }
 
 /// Enum to represent the overall API response
-#[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "status", rename_all = "lowercase")]
+#[cfg_attr(not(feature = "lite"), derive(Serialize, Deserialize))]
+#[cfg_attr(not(feature = "lite"), serde(tag = "status", rename_all = "lowercase"))]
+#[derive(Debug)]
 #[allow(clippy::exhaustive_enums)]
 pub enum ApiResponse<Data, Meta> {
     Success(SuccessResponse<Data, Meta>),

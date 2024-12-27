@@ -3,26 +3,9 @@ use salvo::{
     oapi::{Components, Content, EndpointOutRegister, Operation, RefOr, Response, ToResponse, ToSchema},
     writing::Json,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
-use crate::{ApiError, ApiResponse};
-
-/// Struct to represent the overall API response
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
-struct ApiResponseSchema<Data, Meta> {
-    status: ApiStatus,
-    data: Data,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    meta: Option<Meta>,
-    error: ApiError,
-}
-
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
-#[serde(rename_all = "lowercase")]
-enum ApiStatus {
-    Success,
-    Error,
-}
+use crate::ApiResponse;
 
 impl<Data, Meta> ToResponse for ApiResponse<Data, Meta>
 where
@@ -30,6 +13,33 @@ where
     Meta: ToSchema + 'static,
 {
     fn to_response(components: &mut Components) -> RefOr<Response> {
+        #[cfg(feature = "lite")]
+        #[allow(dead_code)]
+        #[derive(ToSchema)]
+        struct ApiResponseSchema<Data, Meta> {
+            code: i32,
+            data: Data,
+            meta: Option<Meta>,
+            error: crate::lite::__ApiError,
+        }
+
+        #[cfg(not(feature = "lite"))]
+        #[allow(dead_code)]
+        #[derive(ToSchema)]
+        enum ApiStatus {
+            Success,
+            Error,
+        }
+        #[cfg(not(feature = "lite"))]
+        #[allow(dead_code)]
+        #[derive(ToSchema)]
+        struct ApiResponseSchema<Data, Meta> {
+            status: ApiStatus,
+            data: Data,
+            meta: Option<Meta>,
+            error: crate::ApiError,
+        }
+
         Response::new("Response with json format data")
             .add_content(
                 "application/json",
