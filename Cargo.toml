@@ -1,6 +1,6 @@
 [package]
 name = "api-response"
-version = "0.12.0"
+version = "0.13.0"
 edition = "2021"
 license = "MIT"
 description = "A consistent structure for API responses, including success and error handling."

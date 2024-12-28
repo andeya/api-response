@@ -24,6 +24,8 @@ cargo add api-response
 
 ## Unified API Response Structure
 
+### 1. Well-defined Structure
+
 #### Top-Level Fields
 
 | **Field Name** | **Type & Example**       | **Required**                  | **Meaning**           | **Description**                                               |
@@ -52,7 +54,7 @@ cargo add api-response
 | `cost`         | `{ "actualCost": 10, "requestedQueryCost": 10, "executionTime": "250ms" }`                                   | No           | Cost statistics                                      | Provides the cost statistics of the request operation, helping clients understand API resource consumption.                                                    |
 | `apiVersion`   | `"v1.0.1"`                                                                                                   | No           | Current API version information                      | Ensures the API version consistency between client and server, beneficial for compatibility management, suitable for internal use or frequently iterated APIs. |
 
-#### JSON Examples
+#### Well-defined JSON Examples
 
 **Success Response Example:**
 
@@ -138,6 +140,103 @@ cargo add api-response
 }
 ```
 
+### 2. Lightly-defined Structure
+
+Enable the `lite` feature to use the lightly-defined structure.
+
+```toml
+api-response = { version = ">=0.13.0", features = ["lite"] }
+```
+
+The difference between the lightly-defined structure and the well-defined structure is that the `status` field is replaced by the `error.code` field, and when the "code" equals 0, it indicates a successful response.
+
+
+#### Lightly-defined JSON Examples
+
+**Success Response Example:**
+
+```json
+{
+    "code": 0,
+    "data": "success data",
+    "meta": {
+        "requestId": "abc4567890",
+        "user": {
+            "id": "user-123",
+            "roles": [
+                "admin",
+                "editor"
+            ]
+        },
+        "pagination": {
+            "currentPage": 1,
+            "pageSize": 10,
+            "totalPages": 5,
+            "totalRecords": 50,
+            "nextPage": 2,
+            "prevPage": null
+        },
+        "rateLimit": {
+            "limit": 1000,
+            "remaining": 990,
+            "restoreRate": 50,
+            "resetAt": "2021-01-01T00:00:00Z"
+        },
+        "cost": {
+            "actualCost": 10,
+            "requestedQueryCost": 10,
+            "executionTime": "250ms"
+        },
+        "apiVersion": "v1.0.1"
+    }
+}
+```
+
+**Error Response Example:**
+
+```json
+{
+    "code": 404,
+    "error": {
+        "message": "error message",
+        "details": {
+            "key": "value"
+        }
+    },
+    "meta": {
+        "requestId": "abc4567890",
+        "user": {
+            "id": "user-123",
+            "roles": [
+                "admin",
+                "editor"
+            ]
+        },
+        "pagination": {
+            "currentPage": 1,
+            "pageSize": 10,
+            "totalPages": 5,
+            "totalRecords": 50,
+            "nextPage": 2,
+            "prevPage": null
+        },
+        "rateLimit": {
+            "limit": 1000,
+            "remaining": 990,
+            "restoreRate": 50,
+            "resetAt": "2021-01-01T00:00:00Z"
+        },
+        "cost": {
+            "actualCost": 10,
+            "requestedQueryCost": 10,
+            "executionTime": "250ms"
+        },
+        "apiVersion": "v1.0.1"
+    }
+}
+```
+
+
 ## Example
 
 ### Example of data construction.
@@ -147,8 +246,12 @@ use api_response::prelude::*;
 
 #[test]
 fn success_json() {
-    const SUCCESS: &str = r##"{"status":"success","data":"success data","meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##;
-    let api_response = ApiResponse::new_success(
+    const SUCCESS: &str = if cfg!(feature = "lite") {
+        r##"{"code":0,"data":"success data","meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##
+    } else {
+        r##"{"status":"success","data":"success data","meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##
+    };
+    let mut api_response = ApiResponse::new_success(
         "success data",
         DefaultMeta::new()
             .with_request_id("request_id")
@@ -158,12 +261,19 @@ fn success_json() {
     println!("{}", serde_json::to_string_pretty(&api_response).unwrap());
     let s = serde_json::to_string(&api_response).unwrap();
     assert_eq!(SUCCESS, s);
+    api_response = serde_json::from_str(SUCCESS).unwrap();
+    let e = serde_json::to_string(&api_response).unwrap();
+    assert_eq!(SUCCESS, e);
 }
 
 #[test]
 fn error_json() {
-    const ERROR: &str = r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##;
-    let api_response = ApiResponse::<(), _>::new_error(
+    const ERROR: &str = if cfg!(feature = "lite") {
+        r##"{"code":404,"error":{"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##
+    } else {
+        r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##
+    };
+    let mut api_response = ApiResponse::<(), _>::new_error(
         ApiError::new(404, "error message")
             .with_detail("key", "value")
             .with_source("@".parse::<u8>().unwrap_err(), true),
@@ -173,6 +283,9 @@ fn error_json() {
             .insert_custom("key", "value"),
     );
     println!("{}", serde_json::to_string_pretty(&api_response).unwrap());
+    let e = serde_json::to_string(&api_response).unwrap();
+    assert_eq!(ERROR, e);
+    api_response = serde_json::from_str(ERROR).unwrap();
     let e = serde_json::to_string(&api_response).unwrap();
     assert_eq!(ERROR, e);
 }
