@@ -254,3 +254,14 @@ impl BitOr<CodeSegment> for i32 {
             .expect(OVERFLOW)
     }
 }
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
+#[repr(u8)]
+#[non_exhaustive]
+pub enum CodeSegment2 {
+    S01 = 1,
+    S02 = 2,
+    S03 = 3,
+    S04 = 4,
+}
+api_code_macros::enum_segment!(CodeSegment3, u8, 1, 4, S, 2);

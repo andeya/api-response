@@ -23,6 +23,8 @@ http = ">=1"
 inventory = "~0.3.16"
 chrono = { version = ">=0.4", features = ["serde"] }
 getset2 = ">=0.3.2"
+api-code-macros = { path = "api-code-macros" }
+
 
 [dev-dependencies]
 serde_json = "^1.0"
@@ -34,3 +36,6 @@ salvo = { version = ">=0.74", features = ["oapi"] }
 salvo = ["dep:salvo"]
 try = []
 lite = []
+
+[workspace]
+members = ["api-code-macros"]
