@@ -101,7 +101,7 @@ impl<Meta> From<ApiError> for ErrorResponse<Meta> {
 }
 impl<Meta> fmt::Display for ErrorResponse<Meta> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.error.message)
+        write!(f, "{}", self.error)
     }
 }
 impl<Meta: fmt::Debug> Error for ErrorResponse<Meta> {
@@ -134,7 +134,7 @@ impl fmt::Debug for ApiError {
 
 impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.message)
+        write!(f, "{} Code({})", self.message, self.code)
     }
 }
 
@@ -258,5 +258,33 @@ impl ApiError {
         Self: Sized,
     {
         self.api_response(Some(meta))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ApiError;
+    use crate::{
+        ErrorResponse,
+        error_code::{ErrCode, ErrSegment, ErrType, ModPath, ModSection, ModSegment},
+    };
+    #[test]
+    fn display() {
+        const ET: ErrType = ErrType::new(ErrSegment::E100, "The operation was cancelled.");
+        const MS0: ModSection = ModSection::new(ModSegment::M00, "module 0");
+        const MS1: ModSection = ModSection::new(ModSegment::M01, "module 01");
+        const MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
+        const MP: ModPath = ModPath::new(MS0, MS1, MS2);
+        const EC: ErrCode = ErrCode::new(ET, MP);
+        let err_code: ErrCode = ET + MP;
+        assert_eq!(EC, err_code);
+        assert_eq!(
+            "The operation was cancelled. ErrCode(100000102), M00(module 0)/M01(module 01)/M02(module 012)",
+            EC.to_string()
+        );
+        let api_error: ApiError = EC.to_api_error();
+        assert_eq!("The operation was cancelled. Code(100000102)", api_error.to_string());
+        let err_resp: ErrorResponse<()> = ErrorResponse::from_error(api_error);
+        assert_eq!("The operation was cancelled. Code(100000102)", err_resp.to_string());
     }
 }

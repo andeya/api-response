@@ -117,7 +117,6 @@
 // [REQUIRED] G.UNS.SAS.02 Use `assert!` instead of `debug_assert!` to verify boundary conditions in unsafe functions
 #![warn(clippy::debug_assert_with_mut_call)]
 #![cfg_attr(feature = "try", feature(try_trait_v2))]
-#![feature(formatting_options)]
 
 #[cfg(feature = "try")]
 mod try_trait;

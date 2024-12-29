@@ -32,10 +32,11 @@ tokio = { version = "^1.41" }
 salvo = { version = ">=0.74", features = ["oapi"] }
 
 [features]
-# default = ["try", "salvo", "lite"]
+# default = ["try", "salvo", "lite", "formatting_options"]
 salvo = ["dep:salvo"]
 try = []
 lite = []
+formatting_options = []
 
 [workspace]
 members = ["api-code-macros"]

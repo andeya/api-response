@@ -78,11 +78,7 @@ impl ErrCode {
 
 impl Display for ErrCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if f.options().get_alternate() {
-            write!(f, "{} ErrCode({}), {}", self.text(), self.code(), self.mod_path)
-        } else {
-            write!(f, "{} ErrCode({})", self.text(), self.code())
-        }
+        write!(f, "{} ErrCode({}), {}", self.text(), self.code(), self.mod_path)
     }
 }
 
@@ -100,10 +96,9 @@ mod tests {
         const EC: ErrCode = ErrCode::new(ET, MP);
         let err_code: ErrCode = ET + MP;
         assert_eq!(EC, err_code);
-        assert_eq!("The operation was cancelled. ErrCode(100000102)", EC.to_string());
         assert_eq!(
             "The operation was cancelled. ErrCode(100000102), M00(module 0)/M01(module 01)/M02(module 012)",
-            format!("{:#}", EC)
+            EC.to_string()
         );
     }
 }
