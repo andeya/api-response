@@ -16,15 +16,16 @@ where
         S: Serializer,
     {
         struct __ApiError<'a>(&'a ApiError);
-        impl<'a> Serialize for __ApiError<'a> {
+        impl Serialize for __ApiError<'_> {
             fn serialize<__S>(&self, __serializer: __S) -> Result<__S::Ok, __S::Error>
             where
                 __S: Serializer,
             {
+                #![allow(clippy::arithmetic_side_effects)]
                 let mut __serde_state = Serializer::serialize_struct(
                     __serializer,
                     "__ApiError",
-                    false as usize + 1 + 1 + if Option::is_none(&self.0.details) { 0 } else { 1 },
+                    usize::from(false) + 1 + 1 + if Option::is_none(&self.0.details) { 0 } else { 1 },
                 )?;
                 SerializeStruct::serialize_field(&mut __serde_state, "message", &self.0.message)?;
                 if !Option::is_none(&self.0.details) {
@@ -61,7 +62,7 @@ where
                 } else {
                     let mut state = serializer.serialize_struct("ApiResponse", 2)?;
                     state.serialize_field("code", &field0.code())?;
-                    state.serialize_field("error", &field0.error)?;
+                    state.serialize_field("error", &__ApiError(&field0.error))?;
                     state.end()
                 }
             }
@@ -77,6 +78,7 @@ pub(crate) struct __ApiError {
     details: Option<OrderedHashMap<String, String>>,
 }
 
+#[allow(clippy::shadow_reuse, clippy::default_trait_access)]
 impl<'de, Data, Meta> Deserialize<'de> for ApiResponse<Data, Meta>
 where
     Data: Deserialize<'de>,
@@ -157,7 +159,7 @@ where
                     let error: __ApiError = error.ok_or_else(|| de::Error::missing_field("error"))?;
                     Ok(ApiResponse::Error(ErrorResponse {
                         error: ApiError {
-                            code: code,
+                            code,
                             message: error.message,
                             details: error.details,
                             source: Default::default(),

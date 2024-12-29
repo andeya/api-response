@@ -1,7 +1,16 @@
 [package]
 name = "api-code-macros"
 version = "0.1.0"
-edition = "2024"
+description = "Macros for api-response crate"
+documentation = "https://docs.rs/api-code-macros"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
 [lib]
 proc-macro = true
 
@@ -9,4 +18,6 @@ proc-macro = true
 quote = "1"
 syn = "2"
 proc-macro2 = { version = "1", default-features = false }
-proc-macro-error2 = "2"
+
+[dev-dependencies]
+num_enum = "0.7"

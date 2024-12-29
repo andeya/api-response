@@ -1,8 +1,7 @@
 use proc_macro::TokenStream;
-use proc_macro_error2::{abort, abort_call_site, proc_macro_error};
 use proc_macro2::Literal;
 use quote::quote;
-use syn::{Ident, LitInt, LitStr, Token, parse_macro_input};
+use syn::{Ident, LitInt, Token, parse_macro_input};
 
 #[proc_macro]
 pub fn enum_segment(input: TokenStream) -> TokenStream {
@@ -29,11 +28,18 @@ pub fn enum_segment(input: TokenStream) -> TokenStream {
     }
 
     let expanded = quote! {
-        #[derive(Debug, Clone, Copy, Eq, PartialEq, num_enum::IntoPrimitive, num_enum::TryFromPrimitive)]
+        #[allow(non_camel_case_types)]
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+        #[derive(num_enum::IntoPrimitive, num_enum::TryFromPrimitive)]
         #[repr(#repr_type)]
         #[non_exhaustive]
         pub enum #name {
             #(#variants)*
+        }
+        impl std::fmt::Display for #name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "{:0>width$}", #repr_type::from(*self), width = #width as usize)
+            }
         }
     };
 

@@ -1,6 +1,7 @@
 use std::num::ParseIntError;
 
-use api_response::{error_code::*, prelude::*};
+use api_response::prelude::*;
+use error_code::{ModPath, ModSection, ModSegment};
 use salvo::prelude::*;
 use serde::Serialize;
 use serde_json::Value;
@@ -23,12 +24,17 @@ async fn get_user() -> Json<ApiResponse<User, DefaultMeta>> {
     Json(user.api_response_with_meta(DefaultMeta::new().with_request_id("abc-123")))
 }
 
+const MS0: ModSection = ModSegment::M00.new_mod_section("module 0");
+const MS1: ModSection = ModSection::new(ModSegment::M01, "module 01");
+const MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
+const MP: ModPath = ModPath::new(MS0, MS1, MS2);
+
 /// get error
 #[handler]
 async fn get_error() -> Json<ApiResponse<Value, ()>> {
     let err: ParseIntError = "@".parse::<u8>().unwrap_err();
-    let api_error = INVALID_ARGUMENT
-        .api_error1(S01, "Invalid input data")
+    let api_error = ety_grpc::INVALID_ARGUMENT
+        .new_api_error(MP)
         .with_detail("email", "Invalid email format")
         .with_source(err, true);
     println!("api_error={:?}", api_error.downcast_ref::<ParseIntError>().unwrap());

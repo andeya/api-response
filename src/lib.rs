@@ -117,6 +117,7 @@
 // [REQUIRED] G.UNS.SAS.02 Use `assert!` instead of `debug_assert!` to verify boundary conditions in unsafe functions
 #![warn(clippy::debug_assert_with_mut_call)]
 #![cfg_attr(feature = "try", feature(try_trait_v2))]
+#![feature(formatting_options)]
 
 #[cfg(feature = "try")]
 mod try_trait;
@@ -140,9 +141,10 @@ pub mod prelude {
     pub use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
     pub use crate::{
-        ApiResponse, api_err,
+        ApiResponse,
         error::{ApiError, ErrorResponse},
         error_code,
+        error_code::ety_grpc,
         meta::{Cost, DefaultMeta, Pagination, RateLimit, UserMeta},
         result::ApiResult,
         success::{ApiSuccessResponse, SuccessResponse},

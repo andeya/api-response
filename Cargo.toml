@@ -1,15 +1,15 @@
 [package]
 name = "api-response"
-version = "0.13.0"
-edition = "2021"
-license = "MIT"
+version = "0.14.0"
 description = "A consistent structure for API responses, including success and error handling."
-repository = "https://github.com/andeya/api-response"
 documentation = "https://docs.rs/api-response"
-readme = "README.md"
-keywords = ["api", "http", "rpc", "response"]
-categories = ["web-programming", "data-structures"]
-authors = ["Andeya Lee <andeyalee@outlook.com>"]
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -22,8 +22,8 @@ num_enum = "0.7"
 http = ">=1"
 inventory = "~0.3.16"
 chrono = { version = ">=0.4", features = ["serde"] }
-getset2 = ">=0.3.2"
-api-code-macros = { path = "api-code-macros" }
+getset2 = ">=0.4.0"
+api-code-macros = ">=0.1.0"
 
 
 [dev-dependencies]
@@ -39,3 +39,12 @@ lite = []
 
 [workspace]
 members = ["api-code-macros"]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/andeya/api-response"
+readme = "README.md"
+keywords = ["api", "http", "rpc", "response"]
+categories = ["web-programming", "data-structures"]
+authors = ["Andeya Lee <andeyalee@outlook.com>"]

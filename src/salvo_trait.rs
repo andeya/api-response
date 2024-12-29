@@ -6,6 +6,42 @@ use salvo::{
 use serde::Serialize;
 
 use crate::ApiResponse;
+#[cfg(feature = "lite")]
+#[allow(dead_code)]
+#[derive(ToSchema)]
+struct ApiResponseSchema<Data, Meta> {
+    code: i32,
+    data: Data,
+    meta: Option<Meta>,
+    error: crate::lite::__ApiError,
+}
+
+#[cfg(not(feature = "lite"))]
+#[allow(dead_code)]
+#[derive(ToSchema)]
+enum ApiStatus {
+    Success,
+    Error,
+}
+#[cfg(not(feature = "lite"))]
+#[allow(dead_code)]
+#[derive(ToSchema)]
+struct ApiResponseSchema<Data, Meta> {
+    status: ApiStatus,
+    data: Data,
+    meta: Option<Meta>,
+    error: crate::ApiError,
+}
+
+impl<Data, Meta> ToSchema for ApiResponse<Data, Meta>
+where
+    Data: ToSchema + 'static,
+    Meta: ToSchema + 'static,
+{
+    fn to_schema(components: &mut Components) -> RefOr<salvo::oapi::schema::Schema> {
+        ApiResponseSchema::<Data, Meta>::to_schema(components)
+    }
+}
 
 impl<Data, Meta> ToResponse for ApiResponse<Data, Meta>
 where
@@ -13,38 +49,8 @@ where
     Meta: ToSchema + 'static,
 {
     fn to_response(components: &mut Components) -> RefOr<Response> {
-        #[cfg(feature = "lite")]
-        #[allow(dead_code)]
-        #[derive(ToSchema)]
-        struct ApiResponseSchema<Data, Meta> {
-            code: i32,
-            data: Data,
-            meta: Option<Meta>,
-            error: crate::lite::__ApiError,
-        }
-
-        #[cfg(not(feature = "lite"))]
-        #[allow(dead_code)]
-        #[derive(ToSchema)]
-        enum ApiStatus {
-            Success,
-            Error,
-        }
-        #[cfg(not(feature = "lite"))]
-        #[allow(dead_code)]
-        #[derive(ToSchema)]
-        struct ApiResponseSchema<Data, Meta> {
-            status: ApiStatus,
-            data: Data,
-            meta: Option<Meta>,
-            error: crate::ApiError,
-        }
-
         Response::new("Response with json format data")
-            .add_content(
-                "application/json",
-                Content::new(ApiResponseSchema::<Data, Meta>::to_schema(components)),
-            )
+            .add_content("application/json", Content::new(Self::to_schema(components)))
             .into()
     }
 }
