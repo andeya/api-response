@@ -3,7 +3,10 @@ pub mod ety_grpc;
 mod modpath;
 mod segment;
 
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    ops::{Add, BitOr},
+};
 
 pub use errtype::*;
 pub use modpath::*;
@@ -82,8 +85,51 @@ impl Display for ErrCode {
     }
 }
 
+impl BitOr<ModPath> for ErrType {
+    type Output = ErrCode;
+
+    #[inline]
+    fn bitor(self, rhs: ModPath) -> Self::Output {
+        self.new_err_code(rhs)
+    }
+}
+impl Add<ModPath> for ErrType {
+    type Output = ApiError;
+
+    #[inline]
+    fn add(self, rhs: ModPath) -> Self::Output {
+        self.new_api_error(rhs)
+    }
+}
+// impl BitOr<&LazyCell<ModPath>> for ErrType {
+//     type Output = ErrCode;
+
+//     #[inline]
+//     fn bitor(self, rhs: &LazyCell<ModPath>) -> Self::Output {
+//         self.new_err_code(**rhs)
+//     }
+// }
+impl BitOr<&ModPath> for ErrType {
+    type Output = ErrCode;
+
+    #[inline]
+    fn bitor(self, rhs: &ModPath) -> Self::Output {
+        self.new_err_code(*rhs)
+    }
+}
+impl Add<&ModPath> for ErrType {
+    type Output = ApiError;
+
+    #[inline]
+    fn add(self, rhs: &ModPath) -> Self::Output {
+        self.new_api_error(*rhs)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::cell::LazyCell;
+
     use super::{ErrCode, ErrSegment, ErrType, ModPath, ModSection, ModSegment};
     use crate::ApiError;
 
@@ -95,13 +141,19 @@ mod tests {
         const MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
         const MP: ModPath = ModPath::new(MS0, MS1, MS2);
         const EC: ErrCode = ErrCode::new(ET, MP);
-        let err_code: ErrCode = ET | MP;
-        assert_eq!(EC, err_code);
-        let api_error: ApiError = ET + MP;
-        assert_eq!(EC.to_api_error().code(), api_error.code());
         assert_eq!(
             "The operation was cancelled. ErrCode(100000102), M00(module 0)/M01(module 01)/M02(module 012)",
             EC.to_string()
         );
+
+        let err_code: ErrCode = ET | MP;
+        assert_eq!(EC, err_code);
+        let api_error: ApiError = ET + MP;
+        assert_eq!(EC.to_api_error().code(), api_error.code());
+        let mp: LazyCell<ModPath> = LazyCell::new(|| MP);
+        let err_code: ErrCode = ET | *mp;
+        assert_eq!(EC, err_code);
+        let api_error: ApiError = ET + *mp;
+        assert_eq!(EC.to_api_error().code(), api_error.code());
     }
 }
