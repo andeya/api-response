@@ -101,14 +101,6 @@ impl Add<ModPath> for ErrType {
         self.new_api_error(rhs)
     }
 }
-// impl BitOr<&LazyCell<ModPath>> for ErrType {
-//     type Output = ErrCode;
-
-//     #[inline]
-//     fn bitor(self, rhs: &LazyCell<ModPath>) -> Self::Output {
-//         self.new_err_code(**rhs)
-//     }
-// }
 impl BitOr<&ModPath> for ErrType {
     type Output = ErrCode;
 
