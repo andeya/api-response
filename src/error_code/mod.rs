@@ -85,6 +85,7 @@ impl Display for ErrCode {
 #[cfg(test)]
 mod tests {
     use super::{ErrCode, ErrSegment, ErrType, ModPath, ModSection, ModSegment};
+    use crate::ApiError;
 
     #[test]
     fn display() {
@@ -94,8 +95,10 @@ mod tests {
         const MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
         const MP: ModPath = ModPath::new(MS0, MS1, MS2);
         const EC: ErrCode = ErrCode::new(ET, MP);
-        let err_code: ErrCode = ET + MP;
+        let err_code: ErrCode = ET | MP;
         assert_eq!(EC, err_code);
+        let api_error: ApiError = ET + MP;
+        assert_eq!(EC.to_api_error().code(), api_error.code());
         assert_eq!(
             "The operation was cancelled. ErrCode(100000102), M00(module 0)/M01(module 01)/M02(module 012)",
             EC.to_string()

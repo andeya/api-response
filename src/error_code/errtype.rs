@@ -1,4 +1,7 @@
-use std::{fmt::Display, ops::Add};
+use std::{
+    fmt::Display,
+    ops::{Add, BitOr},
+};
 
 use getset2::Getset2;
 
@@ -38,11 +41,20 @@ impl ErrSegment {
         ErrType::new(self, text)
     }
 }
-impl Add<ModPath> for ErrType {
+impl BitOr<ModPath> for ErrType {
     type Output = ErrCode;
 
-    fn add(self, rhs: ModPath) -> Self::Output {
+    #[inline]
+    fn bitor(self, rhs: ModPath) -> Self::Output {
         self.new_err_code(rhs)
+    }
+}
+impl Add<ModPath> for ErrType {
+    type Output = ApiError;
+
+    #[inline]
+    fn add(self, rhs: ModPath) -> Self::Output {
+        self.new_api_error(rhs)
     }
 }
 
