@@ -6,7 +6,7 @@ use super::{ErrCode, ErrSegment, ModPath};
 use crate::ApiError;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Getset2)]
-#[getset2(get_copy(pub, const))]
+#[getset2(get_copy(pub, const), set(pub, const), set_with(pub, const))]
 #[non_exhaustive]
 pub struct ErrType {
     err_segment: ErrSegment,

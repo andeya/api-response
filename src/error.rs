@@ -178,6 +178,14 @@ impl ApiError {
         }
         e
     }
+    pub fn with_code(mut self, code: impl Into<i32>) -> Self {
+        self.code = code.into();
+        self
+    }
+    pub fn with_message(mut self, message: impl Into<String>) -> Self {
+        self.message = message.into();
+        self
+    }
     #[inline(always)]
     pub fn with_details(mut self, details: HashMap<String, String>) -> Self {
         self.details = Some(OrderedHashMap(details));
