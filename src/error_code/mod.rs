@@ -2,11 +2,7 @@ mod errpath;
 mod errtype;
 pub mod ety_grpc;
 
-use std::{
-    fmt::Display,
-    ops::{Add, BitOr},
-    thread::LocalKey,
-};
+use std::{fmt::Display, ops::BitOr, thread::LocalKey};
 
 pub use errpath::*;
 pub use errtype::*;
@@ -91,68 +87,55 @@ impl ErrBrief {
     }
 }
 
+impl BitOr<&'static str> for ErrType {
+    type Output = ErrType;
+
+    #[inline]
+    fn bitor(self, rhs: &'static str) -> Self::Output {
+        self.with_text(rhs)
+    }
+}
+
 impl BitOr<&ErrPath> for ErrType {
-    type Output = ErrBrief;
+    type Output = ApiError;
 
     #[inline]
     fn bitor(self, rhs: &ErrPath) -> Self::Output {
-        self.extract(rhs)
-    }
-}
-impl BitOr<&'static LocalKey<ErrPath>> for ErrType {
-    type Output = ErrBrief;
-
-    #[inline]
-    fn bitor(self, rhs: &'static LocalKey<ErrPath>) -> Self::Output {
-        rhs.with(|v| self.extract(v))
-    }
-}
-impl Add<&ErrPath> for ErrType {
-    type Output = ApiError;
-
-    #[inline]
-    fn add(self, rhs: &ErrPath) -> Self::Output {
         self.api_error(rhs)
     }
 }
-impl Add<&'static LocalKey<ErrPath>> for ErrType {
+impl BitOr<&'static LocalKey<ErrPath>> for ErrType {
     type Output = ApiError;
 
     #[inline]
-    fn add(self, rhs: &'static LocalKey<ErrPath>) -> Self::Output {
+    fn bitor(self, rhs: &'static LocalKey<ErrPath>) -> Self::Output {
         rhs.with(|v| self.api_error(v))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    // use std::cell::LazyCell;
+    use std::cell::LazyCell;
 
-    // use super::{ErrDecl, ErrPath, ErrFlag, ErrType, ModSection,
-    // ModSegment}; use crate::ApiError;
+    use super::{ErrDecl, ErrFlag, ErrPath, ErrPathParent, ErrPathRoot, ErrType, X00};
+    use crate::ApiError;
 
-    // #[test]
-    // fn display() {
-    //     const ET: ErrType = ErrType::new(ErrFlag::E100, "The operation was
-    // cancelled.");     const MS0: ModSection =
-    // ModSection::new(ModSegment::M00, "module 0");     const MS1:
-    // ModSection = ModSection::new(ModSegment::M01, "module 01");     const
-    // MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
-    //     const MP: ErrPath = ErrPath::new(MS0, MS1, MS2);
-    //     const EC: ErrDecl = ErrDecl::new(ET, MP);
-    //     assert_eq!(
-    //         "The operation was cancelled. ErrDecl(100000102), M00(module
-    // 0)/M01(module 01)/M02(module 012)",         EC.to_string()
-    //     );
+    #[test]
+    fn display() {
+        const ET: ErrType = ErrType::new(ErrFlag::E100, "The operation was cancelled.");
+        const EP_LV1: ErrPathRoot = X00("product");
+        const EP_LV2: ErrPathParent = EP_LV1.Y01("system");
+        const EP_LV3: ErrPath = EP_LV2.Z20("module");
+        const EC: ErrDecl = ErrDecl::new(ET, EP_LV3);
+        assert_eq!(
+            "The operation was cancelled. ErrCode(100000120), X00(product)/Y01(system)/Z20(module)",
+            EC.to_string()
+        );
 
-    //     let err_code: ErrDecl = ET | MP;
-    //     assert_eq!(EC, err_code);
-    //     let api_error: ApiError = ET + MP;
-    //     assert_eq!(EC.to_api_error().code(), api_error.code());
-    //     let mp: LazyCell<ErrPath> = LazyCell::new(|| MP);
-    //     let err_code: ErrDecl = ET | *mp;
-    //     assert_eq!(EC, err_code);
-    //     let api_error: ApiError = ET + *mp;
-    //     assert_eq!(EC.to_api_error().code(), api_error.code());
-    // }
+        let api_error: ApiError = ET | &EP_LV3;
+        assert_eq!(EC.api_error().code(), api_error.code());
+        let mp: LazyCell<ErrPath> = LazyCell::new(|| EP_LV3);
+        let api_error: ApiError = ET | &*mp;
+        assert_eq!(EC.api_error().code(), api_error.code());
+    }
 }

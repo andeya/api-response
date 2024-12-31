@@ -286,10 +286,7 @@ mod tests {
         const ED: ErrDecl = ET.declare(EP2);
         const EB: ErrBrief = ED.extract();
 
-        let err_brief: ErrBrief = ET | &EP2;
-        assert_eq!(EB, err_brief);
-
-        let api_error: ApiError = ET + &EP2;
+        let api_error: ApiError = ET | &EP2;
         assert_eq!(EB.api_error().code(), api_error.code());
         assert_eq!(
             "The operation was cancelled. ErrCode(100000120), X00(module 0)/Y01(module 01)/Z20(module 20)",
@@ -299,5 +296,9 @@ mod tests {
         assert_eq!("The operation was cancelled. Code(100000120)", api_error.to_string());
         let err_resp: ErrorResponse<()> = ErrorResponse::from_error(api_error);
         assert_eq!("The operation was cancelled. Code(100000120)", err_resp.to_string());
+
+        assert_eq!("The operation was cancelled.", ET.text());
+        let et2: ErrType = ET | "The request was cancelled.";
+        assert_eq!("The request was cancelled.", et2.text());
     }
 }
