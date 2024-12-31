@@ -5,7 +5,7 @@ use getset2::Getset2;
 use super::{ErrBrief, ErrDecl, ErrPath};
 use crate::ApiError;
 
-api_code_macros::enum_digits!(ErrFlag, u16, 100, 999, E, 3);
+api_response_macros::enum_digits!(ErrFlag, u16, 100, 999, E, 3);
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Getset2)]
 #[getset2(get_copy(pub, const), set(pub, const), set_with(pub, const))]

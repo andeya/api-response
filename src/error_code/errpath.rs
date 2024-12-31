@@ -1,4 +1,4 @@
-api_code_macros::err_path_types!();
+api_response_macros::err_path_types!();
 
 #[cfg(test)]
 mod tests {

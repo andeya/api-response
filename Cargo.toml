@@ -23,7 +23,7 @@ http = ">=1"
 inventory = "~0.3.16"
 chrono = { version = ">=0.4", features = ["serde"] }
 getset2 = ">=0.4.0"
-api-code-macros.workspace = true
+api-response-macros.workspace = true
 
 [dev-dependencies]
 serde_json = "^1.0"
@@ -38,7 +38,7 @@ lite = []
 formatting_options = []
 
 [workspace]
-members = ["api-code-macros"]
+members = ["api-response-macros"]
 
 [workspace.package]
 edition = "2021"
@@ -50,4 +50,4 @@ categories = ["web-programming", "data-structures"]
 authors = ["Andeya Lee <andeyalee@outlook.com>"]
 
 [workspace.dependencies]
-api-code-macros = { version = ">=0.1.0", path = "api-code-macros" }
+api-response-macros = { version = ">=0.2.0", path = "api-response-macros" }

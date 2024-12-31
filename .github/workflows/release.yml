@@ -25,7 +25,7 @@ jobs:
         run: cargo login ${{ secrets.CARGO_TOKEN }}
 
       - name: Cargo Publish
-        run: cargo publish
+        run: ./publish.sh
 
       - name: GitHub Release
         id: create_release

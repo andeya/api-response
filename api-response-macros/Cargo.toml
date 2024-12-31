@@ -1,8 +1,8 @@
 [package]
-name = "api-code-macros"
-version = "0.1.0"
+name = "api-response-macros"
+version = "0.2.0"
 description = "Macros for api-response crate"
-documentation = "https://docs.rs/api-code-macros"
+documentation = "https://docs.rs/api-response-macros"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true

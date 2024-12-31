@@ -1,6 +1,6 @@
 #[test]
 fn gen_code_enum() {
-    api_code_macros::enum_digits!(CodeSegment, u8, 1, 4, S, 2);
+    api_response_macros::enum_digits!(CodeSegment, u8, 1, 4, S, 2);
     assert_eq!(Ok(CodeSegment::S01), CodeSegment::try_from(1));
     assert_eq!(Ok(CodeSegment::S02), CodeSegment::try_from(2));
     assert_eq!(Ok(CodeSegment::S03), CodeSegment::try_from(3));
@@ -10,7 +10,7 @@ fn gen_code_enum() {
 
 #[test]
 fn err_path_types() {
-    api_code_macros::err_path_types!();
+    api_response_macros::err_path_types!();
 
     const ERR_ROOT_PATH: ErrRootPath = X99("name1");
     const ERR_PARENT_PATH: ErrParentPath = ERR_ROOT_PATH.Y01("name2");
