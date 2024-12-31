@@ -100,15 +100,15 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
         new_root_funcs.push(quote! {
             #[allow(non_snake_case)]
             #[inline]
-            pub const fn #new_root_func_ident(name: &'static str) -> ErrRootPath {
-                ErrRootPath { name, flag: #flag_value }
+            pub const fn #new_root_func_ident(name: &'static str) -> ErrPathRoot {
+                ErrPathRoot { name, flag: #flag_value }
             }
         });
         new_parent_methods.push(quote! {
             #[allow(non_snake_case)]
             #[inline]
-            pub const fn #new_parent_method_ident(self, name: &'static str) -> ErrParentPath {
-                ErrParentPath { root: self, name, flag: #flag_value }
+            pub const fn #new_parent_method_ident(self, name: &'static str) -> ErrPathParent {
+                ErrPathParent { root: self, name, flag: #flag_value }
             }
         });
         new_path_methods.push(quote! {
@@ -125,7 +125,7 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
         #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, getset2::Getset2)]
         #[getset2(get_copy(pub, const))]
         #[non_exhaustive]
-        pub struct ErrRootPath {
+        pub struct ErrPathRoot {
             name: &'static str,
             flag: u8,
         }
@@ -133,8 +133,8 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
         #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, getset2::Getset2)]
         #[getset2(get_copy(pub, const))]
         #[non_exhaustive]
-        pub struct ErrParentPath {
-            root: ErrRootPath,
+        pub struct ErrPathParent {
+            root: ErrPathRoot,
             name: &'static str,
             flag: u8,
         }
@@ -143,16 +143,16 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
         #[getset2(get_copy(pub, const))]
         #[non_exhaustive]
         pub struct ErrPath {
-            parent: ErrParentPath,
+            parent: ErrPathParent,
             name: &'static str,
             flag: u8,
         }
-        impl std::fmt::Display for ErrRootPath {
+        impl std::fmt::Display for ErrPathRoot {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 write!(f, "X{:02}({})", self.flag, self.name)
             }
         }
-        impl std::fmt::Display for ErrParentPath {
+        impl std::fmt::Display for ErrPathParent {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 write!(f, "{}/Y{:02}({})", self.root, self.flag, self.name)
             }
@@ -165,7 +165,7 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
 
         #(#new_root_funcs)*
 
-        impl ErrRootPath {
+        impl ErrPathRoot {
             #[inline]
             pub const fn default() -> Self {
                 Self {
@@ -184,11 +184,11 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
             #(#new_parent_methods)*
         }
 
-        impl ErrParentPath {
+        impl ErrPathParent {
             #[inline]
             pub const fn default() -> Self {
                 Self {
-                    root: ErrRootPath::default(),
+                    root: ErrPathRoot::default(),
                     name: "",
                     flag: 0,
                 }
@@ -208,7 +208,7 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
             #[inline]
             pub const fn default() -> Self {
                 Self {
-                    parent: ErrParentPath::default(),
+                    parent: ErrPathParent::default(),
                     name: "",
                     flag: 0,
                 }

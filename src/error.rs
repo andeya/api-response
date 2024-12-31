@@ -273,14 +273,14 @@ impl ApiError {
 mod tests {
     use crate::{
         ApiError, ErrorResponse,
-        error_code::{ErrBrief, ErrDecl, ErrFlag, ErrParentPath, ErrPath, ErrRootPath, ErrType, X00},
+        error_code::{ErrBrief, ErrDecl, ErrFlag, ErrPath, ErrPathParent, ErrPathRoot, ErrType, X00},
     };
     #[test]
     fn display() {
         const ET: ErrType = ErrFlag::E100.define("The operation was cancelled.");
 
-        const EP0: ErrRootPath = X00("module 0");
-        const EP1: ErrParentPath = EP0.Y01("module 01");
+        const EP0: ErrPathRoot = X00("module 0");
+        const EP1: ErrPathParent = EP0.Y01("module 01");
         const EP2: ErrPath = EP1.Z20("module 20");
 
         const ED: ErrDecl = ET.declare(EP2);
