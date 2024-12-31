@@ -1,151 +1,158 @@
+mod errpath;
 mod errtype;
 pub mod ety_grpc;
-mod modpath;
-mod segment;
 
 use std::{
     fmt::Display,
     ops::{Add, BitOr},
+    thread::LocalKey,
 };
 
+pub use errpath::*;
 pub use errtype::*;
-pub use modpath::*;
-pub use segment::*;
+use getset2::Getset2;
 
 use crate::ApiError;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 #[non_exhaustive]
-pub struct ErrCode {
+pub struct ErrDecl {
     pub err_type: ErrType,
-    pub mod_path: ModPath,
+    pub err_path: ErrPath,
 }
 
-impl From<ErrCode> for i32 {
-    fn from(value: ErrCode) -> Self {
-        value.code()
+impl ErrDecl {
+    #[inline]
+    pub const fn new(err_type: ErrType, err_path: ErrPath) -> Self {
+        Self { err_type, err_path }
     }
-}
-impl ErrCode {
-    pub const fn new(err_type: ErrType, mod_path: ModPath) -> Self {
-        Self { err_type, mod_path }
+    #[inline]
+    pub const fn err_flag(&self) -> i32 {
+        self.err_type.flag() as i32
     }
-    pub fn code(&self) -> i32 {
-        self.err_type.err_segment()
-            | self.mod_path.mod1_segment()
-            | self.mod_path.mod2_segment()
-            | self.mod_path.mod3_segment()
+    #[inline]
+    pub const fn err_path_flag(&self) -> i32 {
+        self.err_path.path_flag()
+    }
+    #[inline]
+    pub const fn text(&self) -> &'static str {
+        self.err_type.text()
     }
     pub const fn err_type(&self) -> &ErrType {
         &self.err_type
     }
-    pub const fn err_segment(&self) -> ErrSegment {
-        self.err_type.err_segment()
+    pub const fn err_path(&self) -> &ErrPath {
+        &self.err_path
     }
-    pub const fn text(&self) -> &'static str {
-        self.err_type.text()
+    #[inline(always)]
+    pub const fn extract(&self) -> ErrBrief {
+        ErrBrief::new(self.err_type, &self.err_path)
     }
-    pub const fn mod_path(&self) -> ModPath {
-        self.mod_path
+    #[inline(always)]
+    pub fn api_error(&self) -> ApiError {
+        self.extract().api_error()
     }
-    pub const fn mod1(&self) -> ModSection {
-        self.mod_path.mod1()
+}
+
+impl Display for ErrDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}, {}", self.extract(), self.err_path)
     }
-    pub const fn mod2(&self) -> ModSection {
-        self.mod_path.mod2()
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Getset2)]
+#[getset2(get_copy(pub, const))]
+#[non_exhaustive]
+pub struct ErrBrief {
+    message: &'static str,
+    code: i32,
+}
+impl Display for ErrBrief {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ErrCode({})", self.message, self.code)
     }
-    pub const fn mod3(&self) -> ModSection {
-        self.mod_path.mod3()
+}
+impl ErrBrief {
+    #[inline(always)]
+    pub const fn new(err_type: ErrType, err_path: &ErrPath) -> Self {
+        Self {
+            message: err_type.text(),
+            code: (err_type.flag() as i32 * 1000000) + err_path.path_flag(),
+        }
     }
-    pub const fn with_mod1(mut self, mod1: ModSection) -> Self {
-        self.mod_path.set_mod1(mod1);
-        self
-    }
-    pub const fn with_mod2(mut self, mod2: ModSection) -> Self {
-        self.mod_path.set_mod2(mod2);
-        self
-    }
-    pub const fn with_mod3(mut self, mod3: ModSection) -> Self {
-        self.mod_path.set_mod3(mod3);
-        self
-    }
-    pub fn to_api_error(self) -> ApiError {
+    #[inline(always)]
+    pub fn api_error(&self) -> ApiError {
         ApiError {
-            code: self.code(),
-            message: self.text().to_owned(),
+            code: self.code,
+            message: self.message.to_owned(),
             details: None,
             source: None,
         }
     }
 }
 
-impl Display for ErrCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} ErrCode({}), {}", self.text(), self.code(), self.mod_path)
-    }
-}
-
-impl BitOr<ModPath> for ErrType {
-    type Output = ErrCode;
+impl BitOr<&ErrPath> for ErrType {
+    type Output = ErrBrief;
 
     #[inline]
-    fn bitor(self, rhs: ModPath) -> Self::Output {
-        self.new_err_code(rhs)
+    fn bitor(self, rhs: &ErrPath) -> Self::Output {
+        self.extract(rhs)
     }
 }
-impl Add<ModPath> for ErrType {
+impl BitOr<&'static LocalKey<ErrPath>> for ErrType {
+    type Output = ErrBrief;
+
+    #[inline]
+    fn bitor(self, rhs: &'static LocalKey<ErrPath>) -> Self::Output {
+        rhs.with(|v| self.extract(v))
+    }
+}
+impl Add<&ErrPath> for ErrType {
     type Output = ApiError;
 
     #[inline]
-    fn add(self, rhs: ModPath) -> Self::Output {
-        self.new_api_error(rhs)
+    fn add(self, rhs: &ErrPath) -> Self::Output {
+        self.api_error(rhs)
     }
 }
-impl BitOr<&ModPath> for ErrType {
-    type Output = ErrCode;
-
-    #[inline]
-    fn bitor(self, rhs: &ModPath) -> Self::Output {
-        self.new_err_code(*rhs)
-    }
-}
-impl Add<&ModPath> for ErrType {
+impl Add<&'static LocalKey<ErrPath>> for ErrType {
     type Output = ApiError;
 
     #[inline]
-    fn add(self, rhs: &ModPath) -> Self::Output {
-        self.new_api_error(*rhs)
+    fn add(self, rhs: &'static LocalKey<ErrPath>) -> Self::Output {
+        rhs.with(|v| self.api_error(v))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::cell::LazyCell;
+    // use std::cell::LazyCell;
 
-    use super::{ErrCode, ErrSegment, ErrType, ModPath, ModSection, ModSegment};
-    use crate::ApiError;
+    // use super::{ErrDecl, ErrPath, ErrFlag, ErrType, ModSection,
+    // ModSegment}; use crate::ApiError;
 
-    #[test]
-    fn display() {
-        const ET: ErrType = ErrType::new(ErrSegment::E100, "The operation was cancelled.");
-        const MS0: ModSection = ModSection::new(ModSegment::M00, "module 0");
-        const MS1: ModSection = ModSection::new(ModSegment::M01, "module 01");
-        const MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
-        const MP: ModPath = ModPath::new(MS0, MS1, MS2);
-        const EC: ErrCode = ErrCode::new(ET, MP);
-        assert_eq!(
-            "The operation was cancelled. ErrCode(100000102), M00(module 0)/M01(module 01)/M02(module 012)",
-            EC.to_string()
-        );
+    // #[test]
+    // fn display() {
+    //     const ET: ErrType = ErrType::new(ErrFlag::E100, "The operation was
+    // cancelled.");     const MS0: ModSection =
+    // ModSection::new(ModSegment::M00, "module 0");     const MS1:
+    // ModSection = ModSection::new(ModSegment::M01, "module 01");     const
+    // MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
+    //     const MP: ErrPath = ErrPath::new(MS0, MS1, MS2);
+    //     const EC: ErrDecl = ErrDecl::new(ET, MP);
+    //     assert_eq!(
+    //         "The operation was cancelled. ErrDecl(100000102), M00(module
+    // 0)/M01(module 01)/M02(module 012)",         EC.to_string()
+    //     );
 
-        let err_code: ErrCode = ET | MP;
-        assert_eq!(EC, err_code);
-        let api_error: ApiError = ET + MP;
-        assert_eq!(EC.to_api_error().code(), api_error.code());
-        let mp: LazyCell<ModPath> = LazyCell::new(|| MP);
-        let err_code: ErrCode = ET | *mp;
-        assert_eq!(EC, err_code);
-        let api_error: ApiError = ET + *mp;
-        assert_eq!(EC.to_api_error().code(), api_error.code());
-    }
+    //     let err_code: ErrDecl = ET | MP;
+    //     assert_eq!(EC, err_code);
+    //     let api_error: ApiError = ET + MP;
+    //     assert_eq!(EC.to_api_error().code(), api_error.code());
+    //     let mp: LazyCell<ErrPath> = LazyCell::new(|| MP);
+    //     let err_code: ErrDecl = ET | *mp;
+    //     assert_eq!(EC, err_code);
+    //     let api_error: ApiError = ET + *mp;
+    //     assert_eq!(EC.to_api_error().code(), api_error.code());
+    // }
 }

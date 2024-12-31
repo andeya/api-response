@@ -271,30 +271,33 @@ impl ApiError {
 
 #[cfg(test)]
 mod tests {
-    use super::ApiError;
     use crate::{
-        ErrorResponse,
-        error_code::{ErrCode, ErrSegment, ErrType, ModPath, ModSection, ModSegment},
+        ApiError, ErrorResponse,
+        error_code::{ErrBrief, ErrDecl, ErrFlag, ErrParentPath, ErrPath, ErrRootPath, ErrType, X00},
     };
     #[test]
     fn display() {
-        const ET: ErrType = ErrType::new(ErrSegment::E100, "The operation was cancelled.");
-        const MS0: ModSection = ModSection::new(ModSegment::M00, "module 0");
-        const MS1: ModSection = ModSection::new(ModSegment::M01, "module 01");
-        const MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
-        const MP: ModPath = ModPath::new(MS0, MS1, MS2);
-        const EC: ErrCode = ErrCode::new(ET, MP);
-        let err_code: ErrCode = ET | MP;
-        assert_eq!(EC, err_code);
-        let api_error: ApiError = ET + MP;
-        assert_eq!(EC.to_api_error().code(), api_error.code());
+        const ET: ErrType = ErrFlag::E100.define("The operation was cancelled.");
+
+        const EP0: ErrRootPath = X00("module 0");
+        const EP1: ErrParentPath = EP0.Y01("module 01");
+        const EP2: ErrPath = EP1.Z20("module 20");
+
+        const ED: ErrDecl = ET.declare(EP2);
+        const EB: ErrBrief = ED.extract();
+
+        let err_brief: ErrBrief = ET | &EP2;
+        assert_eq!(EB, err_brief);
+
+        let api_error: ApiError = ET + &EP2;
+        assert_eq!(EB.api_error().code(), api_error.code());
         assert_eq!(
-            "The operation was cancelled. ErrCode(100000102), M00(module 0)/M01(module 01)/M02(module 012)",
-            EC.to_string()
+            "The operation was cancelled. ErrCode(100000120), X00(module 0)/Y01(module 01)/Z20(module 20)",
+            ED.to_string()
         );
-        let api_error: ApiError = EC.to_api_error();
-        assert_eq!("The operation was cancelled. Code(100000102)", api_error.to_string());
+        let api_error: ApiError = ED.api_error();
+        assert_eq!("The operation was cancelled. Code(100000120)", api_error.to_string());
         let err_resp: ErrorResponse<()> = ErrorResponse::from_error(api_error);
-        assert_eq!("The operation was cancelled. Code(100000102)", err_resp.to_string());
+        assert_eq!("The operation was cancelled. Code(100000120)", err_resp.to_string());
     }
 }

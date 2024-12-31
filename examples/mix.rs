@@ -1,7 +1,6 @@
 use std::num::ParseIntError;
 
-use api_response::prelude::*;
-use error_code::{ModPath, ModSection, ModSegment};
+use api_response::{error_code::*, prelude::*};
 use salvo::prelude::*;
 use serde_json::{Value, json};
 
@@ -17,10 +16,9 @@ async fn get_user() -> Json<ApiResponse<Value, DefaultMeta>> {
     Json(user.api_response_with_meta(DefaultMeta::new().with_request_id("abc-123")))
 }
 
-const MS0: ModSection = ModSegment::M00.new_mod_section("module 0");
-const MS1: ModSection = ModSection::new(ModSegment::M01, "module 01");
-const MS2: ModSection = ModSection::new(ModSegment::M02, "module 012");
-const MP: ModPath = ModPath::new(MS0, MS1, MS2);
+const EP_LV1: ErrRootPath = X00("product");
+const EP_LV2: ErrParentPath = EP_LV1.Y01("system");
+const EP_LV3: ErrPath = EP_LV2.Z20("module");
 
 /// get error
 #[cfg_attr(feature = "salvo", endpoint)]
@@ -32,7 +30,7 @@ async fn get_error() -> Json<ApiResponse<Value, ()>> {
         .cloned()
         .collect();
     let error = ety_grpc::INVALID_ARGUMENT
-        .new_api_error(MP)
+        .api_error(&EP_LV3)
         .with_details(details)
         .with_source(err, true);
     println!("error={:?}", error.downcast_ref::<ParseIntError>().unwrap());

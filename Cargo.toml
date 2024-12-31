@@ -1,6 +1,6 @@
 [package]
 name = "api-response"
-version = "0.14.3"
+version = "0.15.0"
 description = "A consistent structure for API responses, including success and error handling."
 documentation = "https://docs.rs/api-response"
 edition.workspace = true
@@ -23,8 +23,7 @@ http = ">=1"
 inventory = "~0.3.16"
 chrono = { version = ">=0.4", features = ["serde"] }
 getset2 = ">=0.4.0"
-api-code-macros = ">=0.1.0"
-
+api-code-macros.workspace = true
 
 [dev-dependencies]
 serde_json = "^1.0"
@@ -49,3 +48,6 @@ readme = "README.md"
 keywords = ["api", "http", "rpc", "response"]
 categories = ["web-programming", "data-structures"]
 authors = ["Andeya Lee <andeyalee@outlook.com>"]
+
+[workspace.dependencies]
+api-code-macros = { version = ">=0.1.0", path = "api-code-macros" }

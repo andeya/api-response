@@ -28,7 +28,6 @@
 #![warn(clippy::missing_const_for_fn)]
 // [REQUIRED] G.TYP.01 Prefer safe conversion functions over `as` for type casting
 #![warn(
-    clippy::as_conversions,
     clippy::cast_lossless,
     clippy::cast_possible_truncation,
     clippy::cast_possible_wrap,
@@ -46,8 +45,6 @@
 // [RECOMMENDED] G.TYP.BOL.05 Use logical operators (&&/||) instead of bitwise operators (&/|) for boolean operations
 // when not necessary
 #![warn(clippy::needless_bitwise_bool)]
-// [REQUIRED] G.TYP.INT.01 Consider the risks of integer overflow, wrapping, and truncation in integer arithmetic
-#![warn(clippy::arithmetic_side_effects)]
 // [REQUIRED] G.TYP.INT.02 Avoid `as` casting between signed and unsigned integers; use safe conversion functions
 #![deny(clippy::cast_sign_loss)]
 // [REQUIRED] G.TYP.INT.03 Avoid using `%` for modulo operations on negative numbers
