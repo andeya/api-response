@@ -90,7 +90,7 @@ impl ErrBrief {
 impl BitOr<&'static str> for ErrType {
     type Output = ErrType;
 
-    #[inline]
+    #[inline(always)]
     fn bitor(self, rhs: &'static str) -> Self::Output {
         self.with_text(rhs)
     }
@@ -99,7 +99,7 @@ impl BitOr<&'static str> for ErrType {
 impl BitOr<&ErrPath> for ErrType {
     type Output = ApiError;
 
-    #[inline]
+    #[inline(always)]
     fn bitor(self, rhs: &ErrPath) -> Self::Output {
         self.api_error(rhs)
     }
@@ -107,7 +107,7 @@ impl BitOr<&ErrPath> for ErrType {
 impl BitOr<&'static LocalKey<ErrPath>> for ErrType {
     type Output = ApiError;
 
-    #[inline]
+    #[inline(always)]
     fn bitor(self, rhs: &'static LocalKey<ErrPath>) -> Self::Output {
         rhs.with(|v| self.api_error(v))
     }
