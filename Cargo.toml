@@ -1,6 +1,6 @@
 [package]
 name = "api-response"
-version = "0.15.2"
+version.workspace = true
 description = "A consistent structure for API responses, including success and error handling."
 documentation = "https://docs.rs/api-response"
 edition.workspace = true
@@ -14,16 +14,16 @@ authors.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+api-response-macros.workspace = true
 serde = { version = "1", features = ["derive"] }
 salvo = { version = ">=0.74", default-features = false, features = [
     "oapi",
 ], optional = true }
 num_enum = "0.7"
 http = ">=1"
-inventory = "~0.3.16"
 chrono = { version = ">=0.4", features = ["serde"] }
 getset2 = ">=0.4.0"
-api-response-macros.workspace = true
+inventory = "~0.3.16"
 
 [dev-dependencies]
 serde_json = "^1.0"
@@ -41,6 +41,7 @@ formatting_options = []
 members = ["api-response-macros"]
 
 [workspace.package]
+version = "0.15.3"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/andeya/api-response"
@@ -50,4 +51,4 @@ categories = ["web-programming", "data-structures"]
 authors = ["Andeya Lee <andeyalee@outlook.com>"]
 
 [workspace.dependencies]
-api-response-macros = { version = ">=0.2.0", path = "api-response-macros" }
+api-response-macros = { version = ">=0.15.3", path = "api-response-macros" }
