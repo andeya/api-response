@@ -43,7 +43,7 @@ formatting_options = []
 members = ["api-response-macros"]
 
 [workspace.package]
-version = "0.15.6"
+version = "0.15.7"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/andeya/api-response"

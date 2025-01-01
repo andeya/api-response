@@ -86,6 +86,7 @@ pub type ErrDeclTree =
 pub type ErrDeclTreeText = BTreeMap<String, BTreeMap<String, BTreeMap<String, BTreeMap<String, HashSet<String>>>>>;
 
 #[derive(Serialize, Deserialize)]
+#[allow(clippy::exhaustive_structs)]
 pub struct KV<T> {
     pub key: String,
     pub value: T,
@@ -148,6 +149,7 @@ impl ErrDeclTally {
     pub fn json(&self) -> String {
         unsafe { serde_json::to_string_pretty(&self.text_tree()).unwrap_unchecked() }
     }
+    #[allow(clippy::shadow_reuse, clippy::shadow_unrelated)]
     pub fn text_vec(&self) -> ErrDeclVecText {
         self.text_tree()
             .iter()
@@ -175,6 +177,7 @@ impl ErrDeclTally {
             })
             .collect()
     }
+    #[allow(clippy::missing_panics_doc, clippy::unwrap_used)]
     pub fn xml(&self) -> String {
         let mut writer = String::new();
         let mut ser = quick_xml::se::Serializer::with_root(&mut writer, Some("ErrorDeclarations")).unwrap();
