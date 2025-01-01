@@ -139,9 +139,6 @@ impl ErrDeclTally {
     pub fn json(&self) -> String {
         unsafe { serde_json::to_string_pretty(&self.text_tree()).unwrap_unchecked() }
     }
-    pub fn yaml(&self) -> String {
-        unsafe { serde_yaml::to_string(&self.text_tree()).unwrap_unchecked() }
-    }
 }
 
 #[cfg(test)]
@@ -186,6 +183,5 @@ mod tests {
         assert_eq!(tally.unique().len(), 4);
         assert_eq!(tally.total().len(), 6);
         println!("{}", tally.json());
-        println!("{}", tally.yaml());
     }
 }
