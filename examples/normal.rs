@@ -32,8 +32,7 @@ const EP_LV3: ErrPath = EP_LV2.Z20("module");
 #[handler]
 async fn get_error() -> Json<ApiResponse<Value, ()>> {
     let err: ParseIntError = "@".parse::<u8>().unwrap_err();
-    let api_error = ety_grpc::INVALID_ARGUMENT
-        .api_error(&EP_LV3)
+    let api_error = api_err!(ety_grpc::INVALID_ARGUMENT, EP_LV3)
         .with_detail("email", "Invalid email format")
         .with_source(err, true);
     println!("api_error={:?}", api_error.downcast_ref::<ParseIntError>().unwrap());

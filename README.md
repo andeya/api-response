@@ -311,8 +311,7 @@ async fn get_error() -> Json<ApiResponse<Value, ()>> {
         .iter()
         .cloned()
         .collect();
-    let error = ety_grpc::INVALID_ARGUMENT
-        .api_error(&EP_LV3)
+    let error = api_err!(ety_grpc::INVALID_ARGUMENT, EP_LV3)
         .with_details(details)
         .with_source(err, true);
     println!("error={:?}", error.downcast_ref::<ParseIntError>().unwrap());

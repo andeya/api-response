@@ -137,7 +137,7 @@ pub mod prelude {
     pub use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
     pub use crate::{
-        ApiResponse,
+        ApiResponse, api_err,
         error::{ApiError, ErrorResponse},
         error_code,
         error_code::ety_grpc,

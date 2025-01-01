@@ -82,7 +82,7 @@ pub struct ErrDeclTally {
 pub type ErrDeclTree =
     BTreeMap<ErrPathRoot, BTreeMap<ErrPathParent, BTreeMap<ErrPath, BTreeMap<ErrType, HashSet<ErrDecl>>>>>;
 
-type ErrDeclTreeText = BTreeMap<String, BTreeMap<String, BTreeMap<String, BTreeMap<String, HashSet<String>>>>>;
+pub type ErrDeclTreeText = BTreeMap<String, BTreeMap<String, BTreeMap<String, BTreeMap<String, HashSet<String>>>>>;
 
 impl ErrDeclTally {
     pub const fn total(&self) -> &Vec<ErrDecl> {
@@ -115,7 +115,7 @@ impl ErrDeclTally {
         }
         b_tree_map
     }
-    fn text(&self) -> ErrDeclTreeText {
+    pub fn text_tree(&self) -> ErrDeclTreeText {
         let mut b_tree_map: ErrDeclTreeText = BTreeMap::new();
         let unique = self.unique();
         for ele in unique {
@@ -137,10 +137,10 @@ impl ErrDeclTally {
         b_tree_map
     }
     pub fn json(&self) -> String {
-        unsafe { serde_json::to_string_pretty(&self.text()).unwrap_unchecked() }
+        unsafe { serde_json::to_string_pretty(&self.text_tree()).unwrap_unchecked() }
     }
     pub fn yaml(&self) -> String {
-        unsafe { serde_yaml::to_string(&self.text()).unwrap_unchecked() }
+        unsafe { serde_yaml::to_string(&self.text_tree()).unwrap_unchecked() }
     }
 }
 
