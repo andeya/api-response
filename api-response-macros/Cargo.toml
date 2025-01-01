@@ -22,3 +22,4 @@ proc-macro2 = { version = "1", default-features = false }
 [dev-dependencies]
 num_enum = "0.7"
 getset2 = "0.4"
+serde = { version = "1", features = ["derive"] }

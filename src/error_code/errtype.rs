@@ -7,7 +7,19 @@ use crate::ApiError;
 
 api_response_macros::enum_digits!(ErrFlag, u16, 100, 999, E, 3);
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Getset2)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Getset2,
+    serde::Serialize,
+    serde::Deserialize
+)]
 #[getset2(get_copy(pub, const), set(pub, const), set_with(pub, const))]
 #[non_exhaustive]
 pub struct ErrType {

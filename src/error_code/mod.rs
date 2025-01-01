@@ -1,16 +1,22 @@
 mod errpath;
 mod errtype;
 pub mod ety_grpc;
+pub mod tally;
 
-use std::{fmt::Display, ops::BitOr, thread::LocalKey};
+use std::{
+    fmt::Display,
+    ops::{Add, BitOr},
+    thread::LocalKey,
+};
 
 pub use errpath::*;
 pub use errtype::*;
 use getset2::Getset2;
+use serde::{Deserialize, Serialize};
 
 use crate::ApiError;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash, Serialize)]
 #[non_exhaustive]
 pub struct ErrDecl {
     pub err_type: ErrType,
@@ -56,7 +62,7 @@ impl Display for ErrDecl {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Getset2)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Getset2, Serialize, Deserialize)]
 #[getset2(get_copy(pub, const))]
 #[non_exhaustive]
 pub struct ErrBrief {
@@ -93,6 +99,31 @@ impl BitOr<&'static str> for ErrType {
     #[inline(always)]
     fn bitor(self, rhs: &'static str) -> Self::Output {
         self.with_text(rhs)
+    }
+}
+
+impl Add<ErrPath> for ErrType {
+    type Output = ErrDecl;
+
+    #[inline(always)]
+    fn add(self, rhs: ErrPath) -> Self::Output {
+        self.declare(rhs)
+    }
+}
+impl Add<&ErrPath> for ErrType {
+    type Output = ErrDecl;
+
+    #[inline(always)]
+    fn add(self, rhs: &ErrPath) -> Self::Output {
+        self.declare(*rhs)
+    }
+}
+impl Add<&'static LocalKey<ErrPath>> for ErrType {
+    type Output = ErrDecl;
+
+    #[inline(always)]
+    fn add(self, rhs: &'static LocalKey<ErrPath>) -> Self::Output {
+        rhs.with(|v| self.declare(*v))
     }
 }
 

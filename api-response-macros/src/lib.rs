@@ -29,7 +29,7 @@ pub fn enum_digits(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize)]
         #[derive(num_enum::IntoPrimitive, num_enum::TryFromPrimitive)]
         #[repr(#repr_type)]
         #[non_exhaustive]
@@ -122,7 +122,7 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, getset2::Getset2)]
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash, getset2::Getset2, serde::Serialize, serde::Deserialize)]
         #[getset2(get_copy(pub, const))]
         #[non_exhaustive]
         pub struct ErrPathRoot {
@@ -130,7 +130,7 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
             flag: u8,
         }
         #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, getset2::Getset2)]
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash, getset2::Getset2, serde::Serialize, serde::Deserialize)]
         #[getset2(get_copy(pub, const))]
         #[non_exhaustive]
         pub struct ErrPathParent {
@@ -139,7 +139,7 @@ pub fn err_path_types(_input: TokenStream) -> TokenStream {
             flag: u8,
         }
         #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, getset2::Getset2)]
+        #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash, getset2::Getset2, serde::Serialize, serde::Deserialize)]
         #[getset2(get_copy(pub, const))]
         #[non_exhaustive]
         pub struct ErrPath {

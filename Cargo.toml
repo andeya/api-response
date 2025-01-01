@@ -24,6 +24,8 @@ http = ">=1"
 chrono = { version = ">=0.4", features = ["serde"] }
 getset2 = ">=0.4.0"
 inventory = "~0.3.16"
+serde_yaml = "0.9"
+serde_json = "1"
 
 [dev-dependencies]
 serde_json = "^1.0"
@@ -41,7 +43,7 @@ formatting_options = []
 members = ["api-response-macros"]
 
 [workspace.package]
-version = "0.15.3"
+version = "0.15.4"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/andeya/api-response"
