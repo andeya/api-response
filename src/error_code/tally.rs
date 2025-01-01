@@ -5,6 +5,7 @@ use std::{
 
 // re-export
 pub use inventory;
+use serde::{Deserialize, Serialize};
 
 use super::{ErrDecl, ErrPath, ErrPathParent, ErrPathRoot, ErrType};
 
@@ -84,6 +85,14 @@ pub type ErrDeclTree =
 
 pub type ErrDeclTreeText = BTreeMap<String, BTreeMap<String, BTreeMap<String, BTreeMap<String, HashSet<String>>>>>;
 
+#[derive(Serialize, Deserialize)]
+pub struct KV<T> {
+    pub key: String,
+    pub value: T,
+}
+
+pub type ErrDeclVecText = Vec<KV<Vec<KV<Vec<KV<Vec<KV<HashSet<String>>>>>>>>>;
+
 impl ErrDeclTally {
     pub const fn total(&self) -> &Vec<ErrDecl> {
         &self.total
@@ -139,6 +148,40 @@ impl ErrDeclTally {
     pub fn json(&self) -> String {
         unsafe { serde_json::to_string_pretty(&self.text_tree()).unwrap_unchecked() }
     }
+    pub fn text_vec(&self) -> ErrDeclVecText {
+        self.text_tree()
+            .iter()
+            .map(|(k, v)| KV {
+                key: k.clone(),
+                value: v
+                    .iter()
+                    .map(|(k, v)| KV {
+                        key: k.clone(),
+                        value: v
+                            .iter()
+                            .map(|(k, v)| KV {
+                                key: k.clone(),
+                                value: v
+                                    .iter()
+                                    .map(|(k, v)| KV {
+                                        key: k.clone(),
+                                        value: v.clone(),
+                                    })
+                                    .collect(),
+                            })
+                            .collect(),
+                    })
+                    .collect(),
+            })
+            .collect()
+    }
+    pub fn xml(&self) -> String {
+        let mut writer = String::new();
+        let mut ser = quick_xml::se::Serializer::with_root(&mut writer, Some("ErrorDeclarations")).unwrap();
+        ser.indent(' ', 2);
+        self.text_vec().serialize(ser).unwrap();
+        writer
+    }
 }
 
 #[cfg(test)]
@@ -183,5 +226,6 @@ mod tests {
         assert_eq!(tally.unique().len(), 4);
         assert_eq!(tally.total().len(), 6);
         println!("{}", tally.json());
+        println!("{}", tally.xml());
     }
 }
