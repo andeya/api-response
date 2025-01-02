@@ -227,7 +227,7 @@ The difference between the lightly-defined structure and the well-defined struct
 
 The `error_code` module provides the ability to construct standardized error-code information.
 
-The standardized error code is segmented and divided according to the decimal literals of unsigned 32-bit integers.
+The standardized error code is segmented and divided according to the decimal literals of `unsigned 32-bit integer`.
 
 The format is:
 ```
