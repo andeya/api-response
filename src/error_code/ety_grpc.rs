@@ -4,23 +4,23 @@ use http::StatusCode;
 
 use super::ErrType;
 
-pub const CANCELLED: ErrType = ErrType::T1100("The operation was cancelled.");
-pub const UNKNOWN: ErrType = ErrType::T1101("Server internal exception or client-side parsing status error.");
-pub const INVALID_ARGUMENT: ErrType = ErrType::T1102("Invalid request argument.");
-pub const DEADLINE_EXCEEDED: ErrType = ErrType::T1103("No response received before Deadline expires.");
-pub const NOT_FOUND: ErrType = ErrType::T1104("Some requested entity was not found.");
-pub const ALREADY_EXISTS: ErrType = ErrType::T1105("The entity that is attempting to be created already exists.");
-pub const PERMISSION_DENIED: ErrType = ErrType::T1106("No permission to execute the request.");
-pub const RESOURCE_EXHAUSTED: ErrType = ErrType::T1107("Insufficient memory or message size exceeds the limit.");
-pub const FAILED_PRECONDITION: ErrType = ErrType::T1108("Operation rejected, system not in required state.");
-pub const ABORTED: ErrType = ErrType::T1109("Operation aborted due to concurrency issues");
-pub const OUT_OF_RANGE: ErrType = ErrType::T1110("The operation was attempted past the valid range.");
-pub const UNIMPLEMENTED: ErrType = ErrType::T1111("The received request/response is not supported.");
-pub const INTERNAL: ErrType = ErrType::T1112("Internal errors indicate broken invariants.");
-pub const UNAVAILABLE: ErrType = ErrType::T1113("The service is currently unavailable or there is a connection error.");
-pub const DATA_LOSS: ErrType = ErrType::T1114("Unrecoverable data loss or corruption.");
+pub const CANCELLED: ErrType = ErrType::T1000("The operation was cancelled.");
+pub const UNKNOWN: ErrType = ErrType::T1001("Server internal exception or client-side parsing status error.");
+pub const INVALID_ARGUMENT: ErrType = ErrType::T1002("Invalid request argument.");
+pub const DEADLINE_EXCEEDED: ErrType = ErrType::T1003("No response received before Deadline expires.");
+pub const NOT_FOUND: ErrType = ErrType::T1004("Some requested entity was not found.");
+pub const ALREADY_EXISTS: ErrType = ErrType::T1005("The entity that is attempting to be created already exists.");
+pub const PERMISSION_DENIED: ErrType = ErrType::T1006("No permission to execute the request.");
+pub const RESOURCE_EXHAUSTED: ErrType = ErrType::T1007("Insufficient memory or message size exceeds the limit.");
+pub const FAILED_PRECONDITION: ErrType = ErrType::T1008("Operation rejected, system not in required state.");
+pub const ABORTED: ErrType = ErrType::T1009("Operation aborted due to concurrency issues");
+pub const OUT_OF_RANGE: ErrType = ErrType::T1010("The operation was attempted past the valid range.");
+pub const UNIMPLEMENTED: ErrType = ErrType::T1011("The received request/response is not supported.");
+pub const INTERNAL: ErrType = ErrType::T1012("Internal errors indicate broken invariants.");
+pub const UNAVAILABLE: ErrType = ErrType::T1013("The service is currently unavailable or there is a connection error.");
+pub const DATA_LOSS: ErrType = ErrType::T1014("Unrecoverable data loss or corruption.");
 pub const UNAUTHENTICATED: ErrType =
-    ErrType::T1115("The request does not have valid authentication credentials for the operation.");
+    ErrType::T1015("The request does not have valid authentication credentials for the operation.");
 
 impl From<ErrType> for StatusCode {
     fn from(value: ErrType) -> Self {

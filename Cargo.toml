@@ -43,7 +43,7 @@ formatting_options = []
 members = ["api-response-macros"]
 
 [workspace.package]
-version = "0.16.1"
+version = "0.16.2"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/andeya/api-response"
@@ -53,4 +53,4 @@ categories = ["web-programming", "data-structures"]
 authors = ["Andeya Lee <andeyalee@outlook.com>"]
 
 [workspace.dependencies]
-api-response-macros = { version = ">=0.16.1", path = "api-response-macros" }
+api-response-macros = { version = ">=0.16.2", path = "api-response-macros" }

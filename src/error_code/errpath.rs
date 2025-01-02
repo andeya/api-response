@@ -1,4 +1,5 @@
 use api_response_macros::ErrPathConstructor;
+
 #[derive(
     Debug,
     Clone,
@@ -77,6 +78,30 @@ impl ErrPathRoot {
     pub const fn path_flag(&self) -> u32 {
         self.flag as u32
     }
+    pub fn try_from<T: TryInto<u8>>(flag: T, name: &'static str) -> Result<Self, InvalidErrPathFlag> {
+        let x: u8 = flag.try_into().map_err(|_| InvalidErrPathFlag::new())?;
+        if x > 99 {
+            Err(InvalidErrPathFlag::new())
+        } else {
+            Ok(Self { name, flag: x })
+        }
+    }
+    pub fn try_to_child<T: TryInto<u8>>(
+        self,
+        child_flag: T,
+        child_name: &'static str,
+    ) -> Result<ErrPathParent, InvalidErrPathFlag> {
+        let x: u8 = child_flag.try_into().map_err(|_| InvalidErrPathFlag::new())?;
+        if x > 99 {
+            Err(InvalidErrPathFlag::new())
+        } else {
+            Ok(ErrPathParent {
+                root: self,
+                name: child_name,
+                flag: x,
+            })
+        }
+    }
 }
 impl ErrPathParent {
     #[inline]
@@ -94,6 +119,22 @@ impl ErrPathParent {
     #[inline]
     pub const fn path_flag(&self) -> u32 {
         (self.root.path_flag() * 100) + self.flag as u32
+    }
+    pub fn try_to_child<T: TryInto<u8>>(
+        self,
+        child_flag: T,
+        child_name: &'static str,
+    ) -> Result<ErrPath, InvalidErrPathFlag> {
+        let x: u8 = child_flag.try_into().map_err(|_| InvalidErrPathFlag::new())?;
+        if x > 99 {
+            Err(InvalidErrPathFlag::new())
+        } else {
+            Ok(ErrPath {
+                parent: self,
+                name: child_name,
+                flag: x,
+            })
+        }
     }
 }
 impl ErrPath {
@@ -131,6 +172,33 @@ impl std::fmt::Display for ErrPath {
     }
 }
 
+/// A possible error value when converting a `ErrType` from a digit
+///
+/// This error indicates that the supplied input was not a valid digit, was
+/// less than 1000, or was greater than 4293.
+#[derive(PartialEq)]
+pub struct InvalidErrPathFlag {
+    _priv: (),
+}
+impl InvalidErrPathFlag {
+    const fn new() -> Self {
+        Self { _priv: () }
+    }
+}
+impl std::fmt::Debug for InvalidErrPathFlag {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("InvalidErrPathFlag")
+            // skip _priv noise
+            .finish()
+    }
+}
+
+impl std::fmt::Display for InvalidErrPathFlag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("invalid error path flag")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -144,5 +212,31 @@ mod tests {
         assert_eq!("X99(name1)", ERR_PATH_ROOT.path());
         assert_eq!("X99(name1)/Y01(name2)", ERR_PATH_PARENT.path());
         assert_eq!("X99(name1)/Y01(name2)/Z20(name3)", ERR_PATH.path());
+    }
+    #[test]
+    fn convert() {
+        assert_eq!(Ok(ErrPathRoot::X00("")), ErrPathRoot::try_from(0, ""));
+        assert_eq!(Ok(ErrPathRoot::X99("")), ErrPathRoot::try_from(99, ""));
+        assert_eq!(Err(InvalidErrPathFlag::new()), ErrPathRoot::try_from(100, ""));
+        assert_eq!(
+            Ok(ErrPathRoot::X00("").Y00("")),
+            ErrPathRoot::X00("").try_to_child(0, "")
+        );
+        assert_eq!(
+            Ok(ErrPathRoot::X99("").Y99("")),
+            ErrPathRoot::X99("").try_to_child(99, "")
+        );
+        assert_eq!(
+            Err(InvalidErrPathFlag::new()),
+            ErrPathRoot::X99("").try_to_child(100, "")
+        );
+        assert_eq!(
+            Ok(ErrPathRoot::X00("").Y00("").Z00("")),
+            ErrPathRoot::X00("").Y00("").try_to_child(0, "")
+        );
+        assert_eq!(
+            Ok(ErrPathRoot::X99("").Y99("").Z99("")),
+            ErrPathRoot::X99("").Y99("").try_to_child(99, "")
+        );
     }
 }
