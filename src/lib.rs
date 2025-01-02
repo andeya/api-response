@@ -198,12 +198,12 @@ impl<Data, Meta> ApiResponse<Data, Meta> {
         Self::Error(ErrorResponse::from_error(error))
     }
     #[inline(always)]
-    pub fn from_error_msg(code: impl Into<i32>, message: impl Into<String>) -> Self {
+    pub fn from_error_msg(code: impl Into<u32>, message: impl Into<String>) -> Self {
         Self::Error(ErrorResponse::from_error_msg(code, message))
     }
     #[inline(always)]
     pub fn from_error_source(
-        code: impl Into<i32>,
+        code: impl Into<u32>,
         source: impl Error + Send + Sync + 'static,
         set_source_detail: bool,
         message: Option<String>,

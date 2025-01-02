@@ -17,14 +17,14 @@ struct User {
 #[endpoint]
 async fn get_user() -> ApiResponse<User, DefaultMeta> {
     let user = User {
-        id: "123".parse().map_err(|e| ApiError::from_source(1, e, true, ()))?,
+        id: "123".parse().map_err(|e| ApiError::from_source(1u32, e, true, ()))?,
         name: "Andeya Lee",
         email: "andeya.lee@example.com",
     };
     user.api_response_with_meta(DefaultMeta::new().with_request_id("abc-123"))
 }
 
-const EP_LV1: ErrPathRoot = X00("product");
+const EP_LV1: ErrPathRoot = ErrPathRoot::X00("product");
 const EP_LV2: ErrPathParent = EP_LV1.Y01("system");
 const EP_LV3: ErrPath = EP_LV2.Z20("module");
 

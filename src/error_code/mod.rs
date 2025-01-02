@@ -29,11 +29,11 @@ impl ErrDecl {
         Self { err_type, err_path }
     }
     #[inline]
-    pub const fn err_flag(&self) -> i32 {
-        self.err_type.flag() as i32
+    pub const fn err_flag(&self) -> u32 {
+        self.err_type.flag() as u32
     }
     #[inline]
-    pub const fn err_path_flag(&self) -> i32 {
+    pub const fn err_path_flag(&self) -> u32 {
         self.err_path.path_flag()
     }
     #[inline]
@@ -67,11 +67,16 @@ impl Display for ErrDecl {
 #[non_exhaustive]
 pub struct ErrBrief {
     message: &'static str,
-    code: i32,
+    /// The value range of the code is from 1000000000 to 4293999999 inclusive.
+    code: u32,
 }
 impl Display for ErrBrief {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} ErrCode({})", self.message, self.code)
+        if self.message.is_empty() {
+            write!(f, "<no message> ErrCode({})", self.code)
+        } else {
+            write!(f, "{} ErrCode({})", self.message, self.code)
+        }
     }
 }
 impl ErrBrief {
@@ -79,7 +84,7 @@ impl ErrBrief {
     pub const fn new(err_type: ErrType, err_path: &ErrPath) -> Self {
         Self {
             message: err_type.text(),
-            code: (err_type.flag() as i32 * 1000000) + err_path.path_flag(),
+            code: (err_type.flag() as u32 * 1000000) + err_path.path_flag(),
         }
     }
     #[inline(always)]
@@ -148,18 +153,18 @@ impl BitOr<&'static LocalKey<ErrPath>> for ErrType {
 mod tests {
     use std::cell::LazyCell;
 
-    use super::{ErrDecl, ErrFlag, ErrPath, ErrPathParent, ErrPathRoot, ErrType, X00};
+    use super::{ErrDecl, ErrPath, ErrPathParent, ErrPathRoot, ErrType};
     use crate::ApiError;
 
     #[test]
     fn display() {
-        const ET: ErrType = ErrType::new(ErrFlag::E100, "The operation was cancelled.");
-        const EP_LV1: ErrPathRoot = X00("product");
+        const ET: ErrType = ErrType::T1100("The operation was cancelled.");
+        const EP_LV1: ErrPathRoot = ErrPathRoot::X00("product");
         const EP_LV2: ErrPathParent = EP_LV1.Y01("system");
         const EP_LV3: ErrPath = EP_LV2.Z20("module");
         const EC: ErrDecl = ErrDecl::new(ET, EP_LV3);
         assert_eq!(
-            "The operation was cancelled. ErrCode(100000120), X00(product)/Y01(system)/Z20(module)",
+            "The operation was cancelled. ErrCode(1100000120), X00(product)/Y01(system)/Z20(module)",
             EC.to_string()
         );
 
@@ -168,5 +173,20 @@ mod tests {
         let mp: LazyCell<ErrPath> = LazyCell::new(|| EP_LV3);
         let api_error: ApiError = ET | &*mp;
         assert_eq!(EC.api_error().code(), api_error.code());
+    }
+
+    #[test]
+    fn min_max_code() {
+        let min_code: ErrDecl = ErrType::T1000("") + ErrPathRoot::X00("").Y00("").Z00("");
+        assert_eq!(
+            "<no message> ErrCode(1000000000), X00()/Y00()/Z00()",
+            min_code.to_string()
+        );
+
+        let max_code: ErrDecl = ErrType::T4293("") + ErrPathRoot::X99("").Y99("").Z99("");
+        assert_eq!(
+            "<no message> ErrCode(4293999999), X99()/Y99()/Z99()",
+            max_code.to_string()
+        );
     }
 }

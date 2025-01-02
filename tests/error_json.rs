@@ -8,7 +8,7 @@ fn error_json() {
         r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##
     };
     let mut api_response = ApiResponse::<(), _>::new_error(
-        ApiError::new(404, "error message")
+        ApiError::new(404u32, "error message")
             .with_detail("key", "value")
             .with_source("@".parse::<u8>().unwrap_err(), true),
         DefaultMeta::new()

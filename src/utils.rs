@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn error_wrapper() {
-        let e: super::ErrWrapper<i32> = 1.into_error();
+        let e: super::ErrWrapper<u32> = 1.into_error();
         let d: &dyn Error = &e;
         assert_eq!("1", d.to_string())
     }

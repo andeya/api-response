@@ -192,32 +192,32 @@ mod tests {
     use crate::{
         ApiError,
         error_code::{
-            ErrDecl, ErrFlag, ErrPath, ErrPathParent, ErrPathRoot, ErrType, X00, X01,
+            ErrDecl, ErrPath, ErrPathParent, ErrPathRoot, ErrType,
             tally::{ErrDeclTally, tally_err_decl},
         },
     };
 
     #[test]
     fn macro_api_err() {
-        const ET: ErrType = ErrType::new(ErrFlag::E100, "The operation was cancelled.");
-        const EP_LV1: ErrPathRoot = X00("product");
+        const ET: ErrType = ErrType::T1100("The operation was cancelled.");
+        const EP_LV1: ErrPathRoot = ErrPathRoot::X00("product");
         const EP_LV2: ErrPathParent = EP_LV1.Y01("system");
         const EP_LV3: ErrPath = EP_LV2.Z20("module");
         const EC: ErrDecl = ErrDecl::new(ET, EP_LV3);
 
         let ae0: ApiError = api_err!(EC);
-        assert_eq!("The operation was cancelled. Code(100000120)", ae0.to_string());
+        assert_eq!("The operation was cancelled. ErrCode(1100000120)", ae0.to_string());
         let ae1: ApiError = api_err!(ET, EP_LV3);
         let _ = api_err!(ET, EP_LV3);
-        assert_eq!("The operation was cancelled. Code(100000120)", ae1.to_string());
+        assert_eq!("The operation was cancelled. ErrCode(1100000120)", ae1.to_string());
         let ae2: ApiError = api_err!(ET, "This is new message.", EP_LV3);
-        assert_eq!("This is new message. Code(100000120)", ae2.to_string());
+        assert_eq!("This is new message. ErrCode(1100000120)", ae2.to_string());
 
-        thread_local! {static EP_LV3_1:ErrPath=X01("product-2").Y01("system-2").Z02("module-2")}
+        thread_local! {static EP_LV3_1:ErrPath = ErrPathRoot::X01("product-2").Y01("system-2").Z02("module-2")}
         let ae3: ApiError = api_err!(ET, &EP_LV3_1);
-        assert_eq!("The operation was cancelled. Code(100010102)", ae3.to_string());
+        assert_eq!("The operation was cancelled. ErrCode(1100010102)", ae3.to_string());
         let ae4: ApiError = api_err!(ET, "This is new message-2.", &EP_LV3_1);
-        assert_eq!("This is new message-2. Code(100010102)", ae4.to_string());
+        assert_eq!("This is new message-2. ErrCode(1100010102)", ae4.to_string());
 
         let s = format!("{:?}", tally_err_decl());
         println!("{s}");

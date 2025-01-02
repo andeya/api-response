@@ -37,11 +37,11 @@ cargo add api-response
 
 #### `ApiError` Object Fields
 
-| **Field Name** | **Type & Example**   | **Required** | **Meaning**   | **Description**                                                                                                                      |
-| -------------- | -------------------- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| code           | `404`                | Yes          | Error code    | A code that identifies the type of error.                                                                                            |
-| message        | `"error message"`    | Yes          | Error message | Text description of the error.                                                                                                       |
-| details        | `{ "key": "value" }` | No           | Error details | The field is of the `map<string, string>` type and can be used to pass the front-end display configuration, error details and so on. |
+| **Field Name** | **Type & Example**            | **Required** | **Meaning**   | **Description**                                                                                                                      |
+| -------------- | ----------------------------- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| code           | `404` unsigned 32-bit integer | Yes          | Error code    | A code that identifies the type of error.                                                                                            |
+| message        | `"error message"`             | Yes          | Error message | Text description of the error.                                                                                                       |
+| details        | `{ "key": "value" }`          | No           | Error details | The field is of the `map<string, string>` type and can be used to pass the front-end display configuration, error details and so on. |
 
 #### `DefaultMeta` Object Fields
 
@@ -223,6 +223,20 @@ The difference between the lightly-defined structure and the well-defined struct
 }
 ```
 
+## Error Code Constructor
+
+The `error_code` module provides the ability to construct standardized error-code information.
+
+The standardized error code is segmented and divided according to the decimal literals of unsigned 32-bit integers.
+
+The format is:
+```
+{[1000,4293]:error type} | {[0,99]:error root path} | {[0,99]:error parent path} | {[0,99]:error path}
+```
+
+So, The value range of the error code is from `1000000000 to 4293999999` inclusive.
+
+
 ## Example
 
 ### Example of data construction.
@@ -260,7 +274,7 @@ fn error_json() {
         r##"{"status":"error","error":{"code":404,"message":"error message","details":{"key":"value","source":"invalid digit found in string"}},"meta":{"requestId":"request_id","pagination":{"currentPage":1,"pageSize":0,"totalPages":0,"totalRecords":0,"nextPage":null,"prevPage":null},"custom":{"key":"value"}}}"##
     };
     let mut api_response = ApiResponse::<(), _>::new_error(
-        ApiError::new(404, "error message")
+        ApiError::new(404u32, "error message")
             .with_detail("key", "value")
             .with_source("@".parse::<u8>().unwrap_err(), true),
         DefaultMeta::new()
@@ -340,3 +354,4 @@ async fn main() {
 -   Get User: http://localhost:7878/
 -   Get Error: http://localhost:7878/error
 -   If the `salvo` feature is enabled, api-doc can be accessed: http://localhost:7878/swagger-ui
+

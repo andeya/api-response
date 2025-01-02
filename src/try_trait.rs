@@ -56,19 +56,19 @@ impl<Data, Meta> FromResidual<ApiResponse<Infallible, Meta>> for ApiResponse<Dat
 mod tests {
     use crate::*;
     fn from_result_residual<Data, Meta>() -> ApiResponse<Data, Meta> {
-        Err(ErrorResponse::from_error_msg(1, "message"))?;
-        Err(ApiError::new(1, "message"))?
+        Err(ErrorResponse::from_error_msg(1u32, "message"))?;
+        Err(ApiError::new(1u32, "message"))?
     }
     fn from_self_residual<Data, Meta>() -> ApiResponse<Data, Meta> {
-        let x: SuccessResponse<Data, Meta> = ApiResponse::from_error_msg(1, "message")?;
+        let x: SuccessResponse<Data, Meta> = ApiResponse::from_error_msg(1u32, "message")?;
         x.into()
     }
     fn into_result_residual<Data, Meta>() -> ApiResult<Data, Meta> {
-        let x: SuccessResponse<Data, Meta> = ApiResponse::from_error_msg(1, "message")?;
+        let x: SuccessResponse<Data, Meta> = ApiResponse::from_error_msg(1u32, "message")?;
         x.into()
     }
     fn into_result_residual2<Data>() -> Result<Data, ApiError> {
-        let x: SuccessResponse<_, ()> = ApiResponse::<_, ()>::from_error_msg(1, "message")?;
+        let x: SuccessResponse<_, ()> = ApiResponse::<_, ()>::from_error_msg(1u32, "message")?;
         x.into()
     }
     #[test]

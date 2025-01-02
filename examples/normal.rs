@@ -1,7 +1,7 @@
 use std::num::ParseIntError;
 
 use api_response::prelude::*;
-use error_code::{ErrPath, ErrPathParent, ErrPathRoot, X00};
+use error_code::{ErrPath, ErrPathParent, ErrPathRoot};
 use salvo::prelude::*;
 use serde::Serialize;
 use serde_json::Value;
@@ -24,7 +24,7 @@ async fn get_user() -> Json<ApiResponse<User, DefaultMeta>> {
     Json(user.api_response_with_meta(DefaultMeta::new().with_request_id("abc-123")))
 }
 
-const EP_LV1: ErrPathRoot = X00("product");
+const EP_LV1: ErrPathRoot = ErrPathRoot::X00("product");
 const EP_LV2: ErrPathParent = EP_LV1.Y01("system");
 const EP_LV3: ErrPath = EP_LV2.Z20("module");
 

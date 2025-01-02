@@ -27,12 +27,12 @@ impl<Meta> ErrorResponse<Meta> {
         ErrorResponse { error, meta: None }
     }
     #[inline(always)]
-    pub fn from_error_msg(code: impl Into<i32>, message: impl Into<String>) -> Self {
+    pub fn from_error_msg(code: impl Into<u32>, message: impl Into<String>) -> Self {
         Self::from_error(ApiError::new(code, message))
     }
     #[inline(always)]
     pub fn from_error_source(
-        code: impl Into<i32>,
+        code: impl Into<u32>,
         source: impl Error + Send + Sync + 'static,
         set_source_detail: bool,
         message: impl Into<MaybeString>,
@@ -70,7 +70,7 @@ impl<Meta> ErrorResponse<Meta> {
         self
     }
     #[inline]
-    pub const fn code(&self) -> i32 {
+    pub const fn code(&self) -> u32 {
         self.error.code()
     }
     #[inline]
@@ -114,7 +114,7 @@ impl<Meta: fmt::Debug> Error for ErrorResponse<Meta> {
 #[cfg_attr(feature = "salvo", derive(salvo::prelude::ToSchema))]
 #[derive(Serialize, Deserialize)]
 pub struct ApiError {
-    pub(crate) code: i32,
+    pub(crate) code: u32,
     pub(crate) message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) details: Option<OrderedHashMap<String, String>>,
@@ -134,7 +134,7 @@ impl fmt::Debug for ApiError {
 
 impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} Code({})", self.message, self.code)
+        write!(f, "{} ErrCode({})", self.message, self.code)
     }
 }
 
@@ -149,7 +149,7 @@ impl Error for ApiError {
 
 impl ApiError {
     #[inline(always)]
-    pub fn new(code: impl Into<i32>, message: impl Into<String>) -> Self {
+    pub fn new(code: impl Into<u32>, message: impl Into<String>) -> Self {
         ApiError {
             code: code.into(),
             message: message.into(),
@@ -159,7 +159,7 @@ impl ApiError {
     }
     #[inline(always)]
     pub fn from_source(
-        code: impl Into<i32>,
+        code: impl Into<u32>,
         source: impl Error + Send + Sync + 'static,
         set_source_detail: bool,
         message: impl Into<MaybeString>,
@@ -178,7 +178,7 @@ impl ApiError {
         }
         e
     }
-    pub fn with_code(mut self, code: impl Into<i32>) -> Self {
+    pub fn with_code(mut self, code: impl Into<u32>) -> Self {
         self.code = code.into();
         self
     }
@@ -223,7 +223,7 @@ impl ApiError {
         self
     }
     #[inline]
-    pub const fn code(&self) -> i32 {
+    pub const fn code(&self) -> u32 {
         self.code
     }
     #[inline]
@@ -273,13 +273,13 @@ impl ApiError {
 mod tests {
     use crate::{
         ApiError, ErrorResponse,
-        error_code::{ErrBrief, ErrDecl, ErrFlag, ErrPath, ErrPathParent, ErrPathRoot, ErrType, X00},
+        error_code::{ErrBrief, ErrDecl, ErrPath, ErrPathParent, ErrPathRoot, ErrType},
     };
     #[test]
     fn display() {
-        const ET: ErrType = ErrFlag::E100.define("The operation was cancelled.");
+        const ET: ErrType = ErrType::T1100("The operation was cancelled.");
 
-        const EP0: ErrPathRoot = X00("module 0");
+        const EP0: ErrPathRoot = ErrPathRoot::X00("module 0");
         const EP1: ErrPathParent = EP0.Y01("module 01");
         const EP2: ErrPath = EP1.Z20("module 20");
 
@@ -289,13 +289,16 @@ mod tests {
         let api_error: ApiError = ET | &EP2;
         assert_eq!(EB.api_error().code(), api_error.code());
         assert_eq!(
-            "The operation was cancelled. ErrCode(100000120), X00(module 0)/Y01(module 01)/Z20(module 20)",
+            "The operation was cancelled. ErrCode(1100000120), X00(module 0)/Y01(module 01)/Z20(module 20)",
             ED.to_string()
         );
         let api_error: ApiError = ED.api_error();
-        assert_eq!("The operation was cancelled. Code(100000120)", api_error.to_string());
+        assert_eq!(
+            "The operation was cancelled. ErrCode(1100000120)",
+            api_error.to_string()
+        );
         let err_resp: ErrorResponse<()> = ErrorResponse::from_error(api_error);
-        assert_eq!("The operation was cancelled. Code(100000120)", err_resp.to_string());
+        assert_eq!("The operation was cancelled. ErrCode(1100000120)", err_resp.to_string());
 
         assert_eq!("The operation was cancelled.", ET.text());
         let et2: ErrType = ET | "The request was cancelled.";

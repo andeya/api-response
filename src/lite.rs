@@ -41,13 +41,13 @@ where
             ApiResponse::Success(ref field0) => {
                 if let Some(meta) = &field0.meta {
                     let mut state = serializer.serialize_struct("ApiResponse", 3)?;
-                    state.serialize_field("code", &0i32)?;
+                    state.serialize_field("code", &0u32)?;
                     state.serialize_field("data", &field0.data)?;
                     state.serialize_field("meta", meta)?;
                     state.end()
                 } else {
                     let mut state = serializer.serialize_struct("ApiResponse", 2)?;
-                    state.serialize_field("code", &0i32)?;
+                    state.serialize_field("code", &0u32)?;
                     state.serialize_field("data", &field0.data)?;
                     state.end()
                 }
@@ -150,8 +150,8 @@ where
                     }
                 }
 
-                let code: i32 = code.unwrap_or_default();
-                // let code: i32 = code.ok_or_else(|| de::Error::missing_field("code"))?;
+                let code: u32 = code.unwrap_or_default();
+                // let code: u32 = code.ok_or_else(|| de::Error::missing_field("code"))?;
                 if code == 0 {
                     let data: Data = data.ok_or_else(|| de::Error::missing_field("data"))?;
                     Ok(ApiResponse::Success(SuccessResponse { data, meta }))

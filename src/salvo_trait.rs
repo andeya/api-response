@@ -10,7 +10,7 @@ use crate::ApiResponse;
 #[allow(dead_code)]
 #[derive(ToSchema)]
 struct ApiResponseSchema<Data, Meta> {
-    code: i32,
+    code: u32,
     data: Data,
     meta: Option<Meta>,
     error: crate::lite::__ApiError,
