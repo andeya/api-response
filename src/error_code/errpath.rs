@@ -199,6 +199,8 @@ impl std::fmt::Display for InvalidErrPathFlag {
     }
 }
 
+impl std::error::Error for InvalidErrPathFlag {}
+
 #[cfg(test)]
 mod tests {
     use super::*;

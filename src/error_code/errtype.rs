@@ -78,8 +78,11 @@ impl std::fmt::Display for InvalidErrTypeFlag {
     }
 }
 
+impl std::error::Error for InvalidErrTypeFlag {}
+
 impl std::convert::TryFrom<i16> for ErrType {
     type Error = InvalidErrTypeFlag;
+    #[allow(clippy::cast_sign_loss)]
     fn try_from(digit: i16) -> Result<Self, Self::Error> {
         if (1000..=4293).contains(&digit) {
             Ok(ErrType {
@@ -94,12 +97,10 @@ impl std::convert::TryFrom<i16> for ErrType {
 
 impl std::convert::TryFrom<u16> for ErrType {
     type Error = InvalidErrTypeFlag;
+    #[allow(clippy::cast_sign_loss)]
     fn try_from(digit: u16) -> Result<Self, Self::Error> {
         if (1000..=4293).contains(&digit) {
-            Ok(ErrType {
-                text: "",
-                flag: digit as u16,
-            })
+            Ok(ErrType { text: "", flag: digit })
         } else {
             Err(InvalidErrTypeFlag::new())
         }
@@ -108,6 +109,8 @@ impl std::convert::TryFrom<u16> for ErrType {
 
 impl std::convert::TryFrom<i32> for ErrType {
     type Error = InvalidErrTypeFlag;
+    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_possible_truncation)]
     fn try_from(digit: i32) -> Result<Self, Self::Error> {
         if (1000..=4293).contains(&digit) {
             Ok(ErrType {
@@ -122,6 +125,8 @@ impl std::convert::TryFrom<i32> for ErrType {
 
 impl std::convert::TryFrom<u32> for ErrType {
     type Error = InvalidErrTypeFlag;
+    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_possible_truncation)]
     fn try_from(digit: u32) -> Result<Self, Self::Error> {
         if (1000..=4293).contains(&digit) {
             Ok(ErrType {
@@ -136,6 +141,8 @@ impl std::convert::TryFrom<u32> for ErrType {
 
 impl std::convert::TryFrom<i64> for ErrType {
     type Error = InvalidErrTypeFlag;
+    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_possible_truncation)]
     fn try_from(digit: i64) -> Result<Self, Self::Error> {
         if (1000..=4293).contains(&digit) {
             Ok(ErrType {
@@ -150,6 +157,8 @@ impl std::convert::TryFrom<i64> for ErrType {
 
 impl std::convert::TryFrom<u64> for ErrType {
     type Error = InvalidErrTypeFlag;
+    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_possible_truncation)]
     fn try_from(digit: u64) -> Result<Self, Self::Error> {
         if (1000..=4293).contains(&digit) {
             Ok(ErrType {
