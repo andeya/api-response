@@ -223,18 +223,27 @@ The difference between the lightly-defined structure and the well-defined struct
 }
 ```
 
-## Error Code Constructor
+## Error Code Specification
 
 The `error_code` module provides the ability to construct standardized error-code information.
 
 The standardized error code is segmented and divided according to the decimal literals of `unsigned 32-bit integer`.
 
 The format is:
-```
-{[1000,4293]:error type} | {[0,99]:error root path} | {[0,99]:error parent path} | {[0,99]:error path}
+```json
+{error type: [1000,4293]} | {error root path: [0,99]} | {error parent path: [0,99]} | {error path: [0,99]}
 ```
 
-So, The value range of the error code is from `1000000000 to 4293999999` inclusive.
+So, The value range of the error code is from **`1000000000 to 4293999999`** inclusive.
+
+A proposed specification for grouping types of error codes:
+
+| Error Type Range | Error Type Category              | Description                                                                                                                                                       |
+| ---------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`1000-1999`**  | **Client-Side Error**            | Handles all issues related to user interface interactions, including `Web`, `Mobile`, and `Desktop` clients.                                                      |
+| **`2000-2999`**  | **Business Service Error**       | Covers issues related to the operation of business layer services.                                                                                                |
+| **`3000-3999`**  | **Infrastructure Service Error** | Includes database operations, middleware, system observability, network communication, gateway and proxy issues, and other infrastructure service-related errors. |
+| **`4000-4293`**  | **Uncategorized Error**          | Other errors that cannot be classified into specific categories.                                                                                                  |
 
 
 ## Example
