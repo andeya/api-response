@@ -230,8 +230,8 @@ The `error_code` module provides the ability to construct standardized error-cod
 The standardized error code is segmented and divided according to the decimal literals of `unsigned 32-bit integer`.
 
 The format is:
-```json
-{error type: [1000,4293]} | {error root path: [0,99]} | {error parent path: [0,99]} | {error path: [0,99]}
+```
+{error type: 1000-4293} | {error root path: 0-99} | {error parent path: 0-99} | {error path: 0-99}
 ```
 
 So, The value range of the error code is from **`1000000000 to 4293999999`** inclusive.
