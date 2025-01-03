@@ -229,22 +229,24 @@ The `error_code` module provides the ability to construct standardized error-cod
 
 The standardized error code is segmented and divided according to the decimal literals of `unsigned 32-bit integer`.
 
-The format is:
-```
-{error type: 1000-4293} | {error root path: 0-99} | {error parent path: 0-99} | {error path: 0-99}
-```
+- The format is:
+    ```
+    {ErrType: 1000-4293} | {ErrPath-Root: 0-99} | {ErrPath-Parent: 0-99} | {ErrPath: 0-99}
+    ```
+    So, The value range of the error code is from **`1000000000 to 4293999999`** inclusive.
 
-So, The value range of the error code is from **`1000000000 to 4293999999`** inclusive.
+- A proposed specification for grouping types of error codes:
 
-A proposed specification for grouping types of error codes:
+    | Error Type Range | Error Type Category              | Description                                                                                                                                                       |
+    | ---------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | **`1000-1999`**  | **Client-Side Error**            | Handles all issues related to user interface interactions, including `Web`, `Mobile`, and `Desktop` clients.                                                      |
+    | **`2000-2999`**  | **Business Service Error**       | Covers issues related to the operation of business layer services.                                                                                                |
+    | **`3000-3999`**  | **Infrastructure Service Error** | Includes database operations, middleware, system observability, network communication, gateway and proxy issues, and other infrastructure service-related errors. |
+    | **`4000-4293`**  | **Uncategorized Error**          | Other errors that cannot be classified into specific categories.                                                                                                  |
+    > **Suggestion**: 
+    > Except for grouping by the first byte, there is no need to distinguish second-level and third-level parts for error code types (they can just be increased according to the serial numbers), because this is highly likely to lead to the exhaustion of number resources. 
 
-| Error Type Range | Error Type Category              | Description                                                                                                                                                       |
-| ---------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`1000-1999`**  | **Client-Side Error**            | Handles all issues related to user interface interactions, including `Web`, `Mobile`, and `Desktop` clients.                                                      |
-| **`2000-2999`**  | **Business Service Error**       | Covers issues related to the operation of business layer services.                                                                                                |
-| **`3000-3999`**  | **Infrastructure Service Error** | Includes database operations, middleware, system observability, network communication, gateway and proxy issues, and other infrastructure service-related errors. |
-| **`4000-4293`**  | **Uncategorized Error**          | Other errors that cannot be classified into specific categories.                                                                                                  |
-
+- It is recommended to use the division method of "`product(ErrPath-Root)`|`system(ErrPath-Parent)`|`module(ErrPath)`" for the error path.
 
 ## Example
 
