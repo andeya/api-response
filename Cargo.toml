@@ -33,17 +33,16 @@ tokio = { version = "^1.41" }
 salvo = { version = ">=0.74", features = ["oapi"] }
 
 [features]
-# default = ["try", "salvo", "lite", "formatting_options"]
+# default = ["try", "salvo", "lite"]
 salvo = ["dep:salvo"]
 try = []
 lite = []
-formatting_options = []
 
 [workspace]
 members = ["api-response-macros"]
 
 [workspace.package]
-version = "0.16.2"
+version = "0.16.3"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/andeya/api-response"
@@ -53,4 +52,4 @@ categories = ["web-programming", "data-structures"]
 authors = ["Andeya Lee <andeyalee@outlook.com>"]
 
 [workspace.dependencies]
-api-response-macros = { version = ">=0.16.2", path = "api-response-macros" }
+api-response-macros = { version = ">=0.16.3", path = "api-response-macros" }
