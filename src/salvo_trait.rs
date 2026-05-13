@@ -1,6 +1,9 @@
 use salvo::{
     Scribe, async_trait,
-    oapi::{Components, Content, EndpointOutRegister, Operation, RefOr, Response, ToResponse, ToSchema},
+    oapi::{
+        ComposeSchema, Components, Content, EndpointOutRegister, Operation, RefOr, Response,
+        ToResponse, ToSchema,
+    },
     writing::Json,
 };
 use serde::Serialize;
@@ -35,8 +38,8 @@ struct ApiResponseSchema<Data, Meta> {
 
 impl<Data, Meta> ToSchema for ApiResponse<Data, Meta>
 where
-    Data: ToSchema + 'static,
-    Meta: ToSchema + 'static,
+    Data: ToSchema + ComposeSchema + 'static,
+    Meta: ToSchema + ComposeSchema + 'static,
 {
     fn to_schema(components: &mut Components) -> RefOr<salvo::oapi::schema::Schema> {
         ApiResponseSchema::<Data, Meta>::to_schema(components)
@@ -45,8 +48,8 @@ where
 
 impl<Data, Meta> ToResponse for ApiResponse<Data, Meta>
 where
-    Data: ToSchema + 'static,
-    Meta: ToSchema + 'static,
+    Data: ToSchema + ComposeSchema + 'static,
+    Meta: ToSchema + ComposeSchema + 'static,
 {
     fn to_response(components: &mut Components) -> RefOr<Response> {
         Response::new("Response with json format data")
@@ -57,8 +60,8 @@ where
 
 impl<Data, Meta> EndpointOutRegister for ApiResponse<Data, Meta>
 where
-    Data: ToSchema + 'static,
-    Meta: ToSchema + 'static,
+    Data: ToSchema + ComposeSchema + 'static,
+    Meta: ToSchema + ComposeSchema + 'static,
 {
     #[inline]
     fn register(components: &mut Components, operation: &mut Operation) {
