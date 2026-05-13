@@ -172,8 +172,12 @@ where
 
         const FIELDS: &[&str] = &["code", "data", "meta", "error"];
 
-        deserializer.deserialize_struct("ApiResponse", FIELDS, ApiResponseVisitor {
-            marker: std::marker::PhantomData,
-        })
+        deserializer.deserialize_struct(
+            "ApiResponse",
+            FIELDS,
+            ApiResponseVisitor {
+                marker: std::marker::PhantomData,
+            },
+        )
     }
 }

@@ -1,9 +1,6 @@
 use salvo::{
     Scribe, async_trait,
-    oapi::{
-        ComposeSchema, Components, Content, EndpointOutRegister, Operation, RefOr, Response,
-        ToResponse, ToSchema,
-    },
+    oapi::{Components, ComposeSchema, Content, EndpointOutRegister, Operation, RefOr, Response, ToResponse, ToSchema},
     writing::Json,
 };
 use serde::Serialize;
